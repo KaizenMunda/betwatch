@@ -30,7 +30,7 @@ const App = () => (
               <Search />
             </AppLayout>
           } />
-          <Route path="/user/:userId" element={
+          <Route path="/users/:userId" element={
             <AppLayout>
               <Search />
             </AppLayout>
