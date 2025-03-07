@@ -6,6 +6,7 @@ import { User } from "@/types/fraudModels";
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { Search, User as UserIcon, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface UserSearchProps {
   className?: string;

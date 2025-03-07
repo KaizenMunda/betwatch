@@ -1,5 +1,4 @@
-
-import { FraudAction, FraudScore, RawParameter, SubScore, User } from "@/types/fraudModels";
+import { FraudAction, FraudScore, RawParameter, SubScore, User, ActionType } from "@/types/fraudModels";
 
 const generateId = (): string => Math.random().toString(36).substring(2, 12);
 
