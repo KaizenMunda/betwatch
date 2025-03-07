@@ -1,6 +1,7 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, User } from "lucide-react";
+import { Search as SearchIcon, User } from "lucide-react";
 import { searchUsers } from "@/data/mockData";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -86,7 +87,7 @@ const Search = () => {
                     className="pl-10"
                     onKeyDown={handleKeyDown}
                   />
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                 </div>
                 <Button onClick={handleSearch} disabled={isSearching || query.trim().length < 2}>
                   {isSearching ? "Searching..." : "Search"}
