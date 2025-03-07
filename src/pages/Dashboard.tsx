@@ -1,3 +1,4 @@
+
 import React from "react";
 import { dashboardStats, mockUsers } from "@/data/mockData";
 import StatCard from "@/components/ui-custom/StatCard";
@@ -244,5 +245,13 @@ const Dashboard = () => {
                 { id: "2", name: "User Behavior", value: 32, weight: 0.3, description: "", parameters: [] },
                 { id: "3", name: "Location Risk", value: 65, weight: 0.2, description: "", parameters: [] },
                 { id: "4", name: "Device Trust", value: 28, weight: 0.1, description: "", parameters: [] },
-             
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
+export default Dashboard;
