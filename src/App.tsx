@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
+import AppLayout from "./components/ui-custom/AppLayout";
 
 const queryClient = new QueryClient();
 
@@ -19,9 +20,21 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/user/:userId" element={<Search />} />
+          <Route path="/dashboard" element={
+            <AppLayout>
+              <Dashboard />
+            </AppLayout>
+          } />
+          <Route path="/search" element={
+            <AppLayout>
+              <Search />
+            </AppLayout>
+          } />
+          <Route path="/user/:userId" element={
+            <AppLayout>
+              <Search />
+            </AppLayout>
+          } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
