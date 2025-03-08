@@ -1,5 +1,5 @@
 
-import { User } from "@/types/fraudModels";
+import { User, ActionType } from "@/types/fraudModels";
 import { generateUsers } from "./users/userGenerator";
 import { generateDashboardStats } from "./dashboard/dashboardStats";
 
@@ -37,10 +37,23 @@ export const updateUserStatus = (userId: string, status: 'active' | 'flagged' | 
   updatedUser.status = status;
   
   // Add a new action
+  // Convert the status to an ActionType
+  let actionType: ActionType;
+  switch (status) {
+    case 'flagged':
+      actionType = 'flag';
+      break;
+    case 'blocked':
+      actionType = 'block';
+      break;
+    default:
+      actionType = 'clear';
+  }
+  
   const newAction = {
     id: Math.random().toString(36).substring(2, 12),
     userId,
-    type: status === 'flagged' ? 'flag' : (status === 'blocked' ? 'block' : 'clear'),
+    type: actionType, // Now correctly typed as ActionType
     timestamp: new Date(),
     reason,
     performedBy: "Current User" // In a real app, this would be the logged-in user
