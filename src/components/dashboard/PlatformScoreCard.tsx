@@ -2,6 +2,7 @@
 import React from "react";
 import ScoreCard from "@/components/ui-custom/ScoreCard";
 import { SubScore } from "@/types/fraudModels";
+import { dashboardStats } from "@/data/mockData";
 
 interface PlatformScoreCardProps {
   score: number;
@@ -9,12 +10,8 @@ interface PlatformScoreCardProps {
 }
 
 const PlatformScoreCard: React.FC<PlatformScoreCardProps> = ({ score, threshold = 70 }) => {
-  const subScores: SubScore[] = [
-    { id: "1", name: "Transaction Risk", value: 45, weight: 0.4, description: "", parameters: [] },
-    { id: "2", name: "User Behavior", value: 32, weight: 0.3, description: "", parameters: [] },
-    { id: "3", name: "Location Risk", value: 65, weight: 0.2, description: "", parameters: [] },
-    { id: "4", name: "Device Trust", value: 28, weight: 0.1, description: "", parameters: [] },
-  ];
+  // Use the sub-scores from dashboardStats
+  const subScores: SubScore[] = dashboardStats.platformSubScores;
 
   return (
     <ScoreCard 
