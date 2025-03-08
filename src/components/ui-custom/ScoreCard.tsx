@@ -115,7 +115,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({
         </div>
         
         {expanded && subScores.length > 0 && (
-          <div className="mt-4 space-y-3 animate-slide-up">
+          <div className="mt-4 space-y-3 animate-fade-in">
             <div className="text-sm font-medium text-muted-foreground mb-2">Score Breakdown</div>
             {subScores.map((subScore) => (
               <div key={subScore.id} className="rounded-lg overflow-hidden">
@@ -127,7 +127,10 @@ const ScoreCard: React.FC<ScoreCardProps> = ({
                     <div className="flex items-center gap-2">
                       <ChevronRight 
                         size={14} 
-                        className={`transition-transform ${expandedSubScoreId === subScore.id ? 'rotate-90' : ''}`} 
+                        className={cn(
+                          "transition-transform duration-200",
+                          expandedSubScoreId === subScore.id ? "rotate-90" : ""
+                        )}
                       />
                       <div className="text-sm font-medium">{subScore.name}</div>
                     </div>
@@ -151,8 +154,8 @@ const ScoreCard: React.FC<ScoreCardProps> = ({
                   </div>
                 </div>
                 
-                {expandedSubScoreId === subScore.id && subScore.parameters.length > 0 && (
-                  <div className="bg-muted/30 p-3 border-t border-border animate-slide-down">
+                {expandedSubScoreId === subScore.id && subScore.parameters && subScore.parameters.length > 0 && (
+                  <div className="bg-muted/30 p-3 border-t border-border animate-slide-in-right">
                     <div className="text-xs font-medium text-muted-foreground mb-2">Raw Parameters</div>
                     <div className="space-y-2">
                       {subScore.parameters.map((param) => (

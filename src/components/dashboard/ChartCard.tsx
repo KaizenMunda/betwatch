@@ -30,7 +30,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className={`h-[${height}]`}>
+        <div style={{ height }} className="w-full">
           <ResponsiveContainer width="100%" height="100%">
             {chartType === "area" ? (
               <AreaChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
