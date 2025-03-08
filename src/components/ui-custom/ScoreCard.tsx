@@ -44,11 +44,8 @@ const ScoreCard: React.FC<ScoreCardProps> = ({
   };
   
   const toggleSubScoreExpanded = (id: string) => {
-    if (expandedSubScoreId === id) {
-      setExpandedSubScoreId(null);
-    } else {
-      setExpandedSubScoreId(id);
-    }
+    console.log("Toggling subscore:", id, "Current expanded:", expandedSubScoreId);
+    setExpandedSubScoreId(expandedSubScoreId === id ? null : id);
   };
   
   const getImpactColor = (impact?: 'high' | 'medium' | 'low') => {
@@ -154,32 +151,36 @@ const ScoreCard: React.FC<ScoreCardProps> = ({
                   </div>
                 </div>
                 
-                {expandedSubScoreId === subScore.id && subScore.parameters && subScore.parameters.length > 0 && (
+                {expandedSubScoreId === subScore.id && (
                   <div className="bg-muted/30 p-3 border-t border-border animate-slide-in-right">
                     <div className="text-xs font-medium text-muted-foreground mb-2">Raw Parameters</div>
                     <div className="space-y-2">
-                      {subScore.parameters.map((param) => (
-                        <div key={param.id} className="flex flex-col p-2 bg-background/50 rounded-md">
-                          <div className="flex justify-between">
-                            <div className="text-xs font-medium flex items-center gap-1">
-                              {param.name}
-                              {param.impact && (
-                                <span className={`text-[10px] ${getImpactColor(param.impact)}`}>
-                                  ({param.impact} impact)
-                                </span>
-                              )}
+                      {subScore.parameters && subScore.parameters.length > 0 ? (
+                        subScore.parameters.map((param) => (
+                          <div key={param.id} className="flex flex-col p-2 bg-background/50 rounded-md">
+                            <div className="flex justify-between">
+                              <div className="text-xs font-medium flex items-center gap-1">
+                                {param.name}
+                                {param.impact && (
+                                  <span className={`text-[10px] ${getImpactColor(param.impact)}`}>
+                                    ({param.impact} impact)
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs font-mono">
+                                {formatParameterValue(param.value, param.type)}
+                              </div>
                             </div>
-                            <div className="text-xs font-mono">
-                              {formatParameterValue(param.value, param.type)}
-                            </div>
+                            {param.description && (
+                              <div className="text-[10px] text-muted-foreground mt-1">
+                                {param.description}
+                              </div>
+                            )}
                           </div>
-                          {param.description && (
-                            <div className="text-[10px] text-muted-foreground mt-1">
-                              {param.description}
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <div className="text-xs text-muted-foreground italic">No detailed parameters available</div>
+                      )}
                     </div>
                   </div>
                 )}
