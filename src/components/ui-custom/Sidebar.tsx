@@ -9,6 +9,7 @@ import {
   Settings,
   ShieldAlert,
   Users,
+  UserRoundSearch
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -80,7 +81,7 @@ const Sidebar = () => {
       collapsed ? "w-[70px]" : "w-[240px]"
     )}>
       <div className="flex items-center justify-between p-4 border-b border-border">
-        {!collapsed && <h1 className="text-xl font-bold">Fraud Monitor</h1>}
+        {!collapsed && <h1 className="text-xl font-bold">BetWatch</h1>}
         <Button 
           variant="ghost" 
           size="icon" 
@@ -127,26 +128,37 @@ const Sidebar = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="space-y-1">
-              <MenuItem icon={Home} label="Dashboard" to="/dashboard" />
-              <MenuItem icon={SearchIcon} label="Search" to="/search" />
-            </div>
-            
             <div className="pt-1">
-              <h3 className="px-3 text-xs font-medium text-muted-foreground">Analytics</h3>
+              <h3 className="px-3 text-xs font-medium text-muted-foreground">MONITOR</h3>
+            </div>
+            <div className="space-y-1">
+              <MenuItem icon={Home} label="Overview" to="/dashboard" />
+              <MenuItem icon={UserRoundSearch} label="User Search" to="/search" />
+              <MenuItem icon={SearchIcon} label="High Risk Users" to="/risks-scores" />
+              <MenuItem icon={SearchIcon} label="Users" to="/risky-users" />
+            </div>
+          
+            <div className="pt-1">
+              <h3 className="px-3 text-xs font-medium text-muted-foreground">INVESTIGATE</h3>
             </div>
             
             <SubMenu icon={BarChart4} label="Reports" defaultOpen>
               <MenuItem icon={ShieldAlert} label="Fraud Overview" to="/analytics/fraud" />
               <MenuItem icon={Users} label="User Activity" to="/analytics/users" />
             </SubMenu>
+
+            <SubMenu icon={BarChart4} label="Indicators" defaultOpen>
+              <MenuItem icon={ShieldAlert} label="Game Theme" to="/analytics/fraud" />
+              <MenuItem icon={Users} label="Product Interaction" to="/analytics/users" />
+            </SubMenu>
+
             
             <div className="pt-1">
-              <h3 className="px-3 text-xs font-medium text-muted-foreground">Administration</h3>
+              <h3 className="px-3 text-xs font-medium text-muted-foreground">CONFIGURE</h3>
             </div>
-            
+
+            <MenuItem icon={Settings} label="Risk Thresholds" to="/settings" />
             <MenuItem icon={Users} label="User Management" to="/users" />
-            <MenuItem icon={Settings} label="Settings" to="/settings" />
           </div>
         )}
       </div>

@@ -50,19 +50,19 @@ export function AppSidebar() {
               <NavItem 
                 href="/" 
                 icon={HomeIcon} 
-                label="Dashboard" 
+                label="Overview" 
                 active={isActive("/")} 
               />
               <NavItem 
                 href="/users" 
-                icon={UserSearch} 
+                icon={Search} 
                 label="Users" 
                 active={isActive("/users")} 
               />
               <NavItem 
                 href="/search" 
                 icon={Search} 
-                label="Search" 
+                label="User Search" 
                 active={isActive("/search")} 
               />
             </nav>

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
+import UserProfile from "./pages/UserProfile";
 import AppLayout from "./components/ui-custom/AppLayout";
 
 const queryClient = new QueryClient();
@@ -32,7 +32,7 @@ const App = () => (
           } />
           <Route path="/users/:userId" element={
             <AppLayout>
-              <Search />
+              <UserProfile />
             </AppLayout>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
