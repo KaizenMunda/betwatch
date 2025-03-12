@@ -10,8 +10,8 @@ export const dashboardStats = generateDashboardStats();
 export const users: User[] = [
   {
     id: "USR001",
-    name: "John Doe",
-    email: "john.doe@example.com",
+    name: "Rajesh Kumar",
+    email: "rajesh.kumar@example.com",
     status: "active",
     lastActive: new Date(2024, 2, 1),
     joinDate: new Date(2023, 1, 15),
@@ -44,15 +44,15 @@ export const users: User[] = [
     },
     profile: {
       joinDate: new Date(2023, 1, 15),
-      location: "New York, USA",
-      phoneNumber: "+1 (555) 123-4567",
+      location: "Mumbai, Maharashtra",
+      phoneNumber: "+91 98765 43210",
       verificationStatus: "verified",
       totalTransactions: 145,
-      accountBalance: 2500.00
+      accountBalance: 185000.00
     },
     activities: [
-      { type: "login", date: new Date(2024, 2, 1), location: "New York, USA", device: "iPhone 13", status: "completed" },
-      { type: "transaction", date: new Date(2024, 2, 1), amount: 500, status: "completed" },
+      { type: "login", date: new Date(2024, 2, 1), location: "Mumbai, Maharashtra", device: "OnePlus 11", status: "completed" },
+      { type: "transaction", date: new Date(2024, 2, 1), amount: 25000, status: "completed" },
       { type: "password_change", date: new Date(2024, 1, 15), status: "completed" }
     ],
     riskMetrics: {
@@ -63,16 +63,16 @@ export const users: User[] = [
       lastAssessment: new Date(2024, 2, 1)
     },
     transactionHistory: [
-      { id: "TRX001", date: new Date(2024, 2, 1), amount: 500, type: "deposit", status: "completed" },
-      { id: "TRX002", date: new Date(2024, 2, 1), amount: 200, type: "withdrawal", status: "completed" },
-      { id: "TRX003", date: new Date(2024, 1, 28), amount: 1000, type: "deposit", status: "completed" }
+      { id: "TRX001", date: new Date(2024, 2, 1), amount: 25000, type: "deposit", status: "completed" },
+      { id: "TRX002", date: new Date(2024, 2, 1), amount: 10000, type: "withdrawal", status: "completed" },
+      { id: "TRX003", date: new Date(2024, 1, 28), amount: 50000, type: "deposit", status: "completed" }
     ],
     actions: []
   },
   {
     id: "USR002",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
+    name: "Priya Sharma",
+    email: "priya.sharma@example.com",
     status: "flagged",
     lastActive: new Date(2024, 2, 2),
     joinDate: new Date(2023, 5, 20),
@@ -105,16 +105,16 @@ export const users: User[] = [
     },
     profile: {
       joinDate: new Date(2023, 5, 20),
-      location: "Los Angeles, USA",
-      phoneNumber: "+1 (555) 987-6543",
+      location: "Delhi, NCR",
+      phoneNumber: "+91 87654 32109",
       verificationStatus: "pending",
       totalTransactions: 89,
-      accountBalance: 1200.00
+      accountBalance: 75000.00
     },
     activities: [
-      { type: "login", date: new Date(2024, 2, 2), location: "Unknown", device: "Android Device", status: "flagged" },
-      { type: "failed_transaction", date: new Date(2024, 2, 2), amount: 2000, status: "failed" },
-      { type: "suspicious_login", date: new Date(2024, 2, 1), location: "Different Country", status: "flagged" }
+      { type: "login", date: new Date(2024, 2, 2), location: "Unknown", device: "Vivo V29", status: "flagged" },
+      { type: "failed_transaction", date: new Date(2024, 2, 2), amount: 100000, status: "failed" },
+      { type: "suspicious_login", date: new Date(2024, 2, 1), location: "Different City", status: "flagged" }
     ],
     riskMetrics: {
       loginAttempts: 5,
@@ -124,9 +124,9 @@ export const users: User[] = [
       lastAssessment: new Date(2024, 2, 2)
     },
     transactionHistory: [
-      { id: "TRX004", date: new Date(2024, 2, 2), amount: 2000, type: "withdrawal", status: "failed" },
-      { id: "TRX005", date: new Date(2024, 2, 1), amount: 300, type: "withdrawal", status: "completed" },
-      { id: "TRX006", date: new Date(2024, 1, 30), amount: 500, type: "deposit", status: "completed" }
+      { id: "TRX004", date: new Date(2024, 2, 2), amount: 100000, type: "withdrawal", status: "failed" },
+      { id: "TRX005", date: new Date(2024, 2, 1), amount: 15000, type: "withdrawal", status: "completed" },
+      { id: "TRX006", date: new Date(2024, 1, 30), amount: 25000, type: "deposit", status: "completed" }
     ],
     actions: []
   }
