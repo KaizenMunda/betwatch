@@ -1,14 +1,13 @@
-
 import React from "react";
 import StatCard from "@/components/ui-custom/StatCard";
-import { AlertTriangle, Lock, ShieldAlert, Users } from "lucide-react";
+import { AlertTriangle, Lock, Users, Flag } from "lucide-react";
 
 interface StatsOverviewProps {
   stats: {
     totalUsers: number;
     flaggedUsers: number;
     blockedUsers: number;
-    averageScore: number;
+    underReviewUsers: number;
   };
 }
 
@@ -25,9 +24,18 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ stats }) => {
         description="vs last month"
       />
       <StatCard 
+        title="Under Review" 
+        value={stats.underReviewUsers.toLocaleString()} 
+        icon={AlertTriangle}
+        iconColor="text-yellow-600"
+        iconBackground="bg-yellow-100 dark:bg-yellow-950/30"
+        change={{ value: 8, timeframe: "vs last month" }}
+        description="vs last month"
+      />
+      <StatCard 
         title="Flagged Users" 
         value={stats.flaggedUsers.toLocaleString()} 
-        icon={AlertTriangle}
+        icon={Flag}
         iconColor="text-orange-600"
         iconBackground="bg-orange-100 dark:bg-orange-950/30"
         change={{ value: 8, timeframe: "vs last month" }}
@@ -40,15 +48,6 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ stats }) => {
         iconColor="text-red-600"
         iconBackground="bg-red-100 dark:bg-red-950/30"
         change={{ value: 5, timeframe: "vs last month" }}
-        description="vs last month"
-      />
-      <StatCard 
-        title="Average Fraud Score" 
-        value={stats.averageScore.toFixed(1)} 
-        icon={ShieldAlert}
-        iconColor="text-purple-600"
-        iconBackground="bg-purple-100 dark:bg-purple-950/30"
-        change={{ value: -2, timeframe: "vs last month" }}
         description="vs last month"
       />
     </div>

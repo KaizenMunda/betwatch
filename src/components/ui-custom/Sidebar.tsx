@@ -59,14 +59,19 @@ export function Sidebar({ className }: SidebarProps) {
               )}
             >
               <Users className="h-4 w-4" />
-              <span>Risky Users</span>
+              <span>High Risk Users</span>
             </Link>
-            <Button variant="ghost" className="w-full justify-start" asChild>
-              <Link to="/search">
-                <Search className="mr-2 h-4 w-4" />
-                User Search
-              </Link>
-            </Button>
+            <Link
+              to="/search"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
+                location.pathname === "/search" &&
+                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+              )}
+            >
+              <Search className="h-4 w-4" />
+              <span>User Search</span>
+            </Link>
           </div>
         </div>
 

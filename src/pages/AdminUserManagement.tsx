@@ -24,6 +24,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useNavigate } from "react-router-dom";
+
+interface UserAccess {
+  [key: string]: {
+    [key: string]: boolean;
+  };
+}
 
 // Mock admin users data
 const mockAdminUsers = [
@@ -78,8 +85,15 @@ const mockAdminUsers = [
 ];
 
 const AdminUserManagement = () => {
+  const navigate = useNavigate();
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] = useState("viewer");
+  const [userAccess, setUserAccess] = useState<UserAccess>(
+    mockAdminUsers.reduce((acc, user) => ({
+      ...acc,
+      [user.id]: user.access
+    }), {})
+  );
 
   const handleAddUser = () => {
     // In a real application, this would make an API call to add the user
@@ -90,12 +104,22 @@ const AdminUserManagement = () => {
 
   const handleAccessChange = (userId: string, page: string, checked: boolean) => {
     // In a real application, this would make an API call to update user access
-    console.log("Updating access:", { userId, page, checked });
+    setUserAccess(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [page]: checked
+      }
+    }));
   };
 
   const handleRemoveUser = (userId: string) => {
     // In a real application, this would make an API call to remove the user
     console.log("Removing user:", userId);
+  };
+
+  const handleViewHistory = (userId: string) => {
+    navigate(`/user-action-history/${userId}`);
   };
 
   return (
@@ -194,24 +218,33 @@ const AdminUserManagement = () => {
                       </SelectContent>
                     </Select>
                   </TableCell>
-                  {Object.entries(user.access).map(([page, hasAccess]) => (
+                  {Object.entries(userAccess[user.id]).map(([page, hasAccess]) => (
                     <TableCell key={page}>
                       <Checkbox
                         checked={hasAccess}
                         onCheckedChange={(checked) =>
-                          handleAccessChange(user.id, page, checked as boolean)
+                          handleAccessChange(user.id, page, !!checked)
                         }
                       />
                     </TableCell>
                   ))}
                   <TableCell>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleRemoveUser(user.id)}
-                    >
-                      Remove
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewHistory(user.id)}
+                      >
+                        View History
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemoveUser(user.id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

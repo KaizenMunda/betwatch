@@ -98,12 +98,18 @@ const RemoteAccess = () => {
         </Card>
       </div>
 
-      <UserListTable
-        users={mockUsers}
-        columns={columns}
-        title="Remote Access Activity"
-        description="Monitor remote access patterns and suspicious behavior"
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Remote Access Activity</CardTitle>
+          <CardDescription>Monitor remote access patterns and suspicious behavior</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UserListTable
+            users={mockUsers}
+            columns={columns}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -80,7 +80,7 @@ const RiskScores = () => {
         <Card>
           <CardHeader>
             <CardTitle>High Risk Categories</CardTitle>
-            <CardDescription>Categories scoring > 7.5</CardDescription>
+            <CardDescription>Categories scoring 7.5</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-red-500">2</div>

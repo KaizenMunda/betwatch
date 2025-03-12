@@ -1,9 +1,9 @@
-
 export const generateDashboardStats = () => {
   const averageScore = 40 + Math.floor(Math.random() * 20);
   
   return {
     totalUsers: 10000 + Math.floor(Math.random() * 1000),
+    underReviewUsers: 150 + Math.floor(Math.random() * 30),
     flaggedUsers: 200 + Math.floor(Math.random() * 50),
     blockedUsers: 50 + Math.floor(Math.random() * 20),
     averageScore,
@@ -63,3 +63,5 @@ export const generateDashboardStats = () => {
     ]
   };
 };
+
+export default generateDashboardStats;

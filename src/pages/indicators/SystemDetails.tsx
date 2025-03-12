@@ -98,12 +98,18 @@ const SystemDetails = () => {
         </Card>
       </div>
 
-      <UserListTable
-        users={mockUsers}
-        columns={columns}
-        title="System Activity"
-        description="Monitor user system details and behavior"
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>System Activity</CardTitle>
+          <CardDescription>Monitor user system details and behavior</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UserListTable
+            users={mockUsers}
+            columns={columns}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

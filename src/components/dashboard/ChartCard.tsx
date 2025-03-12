@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -52,11 +51,27 @@ const ChartCard: React.FC<ChartCardProps> = ({
                 <YAxis style={{ fontSize: '12px' }} />
                 <Tooltip />
                 {Array.isArray(dataKeys.y) ? (
-                  dataKeys.y.map((key, index) => (
+                  dataKeys.y.map((key) => (
                     <Bar 
                       key={key}
                       dataKey={key} 
-                      fill={index === 0 ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
+                      stackId={
+                        key.includes("Under") ? "review" :
+                        key.includes("Flagged") ? "flagged" : "blocked"
+                      }
+                      fill={
+                        key.includes("Under") 
+                          ? key.startsWith("auto") 
+                            ? "hsl(48 96% 70%)"   // Light Yellow
+                            : "hsl(48 96% 53%)"    // Dark Yellow
+                          : key.includes("Flagged")
+                          ? key.startsWith("auto")
+                            ? "hsl(25 95% 70%)"    // Light Orange
+                            : "hsl(25 95% 53%)"     // Dark Orange
+                          : key.startsWith("auto")
+                            ? "hsl(0 84% 77%)"     // Light Red
+                            : "hsl(0 84% 60%)"      // Dark Red
+                      }
                       radius={[4, 4, 0, 0]} 
                     />
                   ))

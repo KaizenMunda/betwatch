@@ -98,12 +98,18 @@ const MouseMovement = () => {
         </Card>
       </div>
 
-      <UserListTable
-        users={mockUsers}
-        columns={columns}
-        title="Mouse Movement Analysis"
-        description="Monitor user mouse patterns and bot-like behavior"
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Mouse Movement Analysis</CardTitle>
+          <CardDescription>Monitor user mouse patterns and bot-like behavior</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UserListTable
+            users={mockUsers}
+            columns={columns}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

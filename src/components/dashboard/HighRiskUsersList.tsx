@@ -1,8 +1,8 @@
-
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { User as UserIcon } from "lucide-react";
 import { User } from "@/types/fraudModels";
+import { Button } from "@/components/ui/button";
 
 interface HighRiskUsersListProps {
   users: User[];
@@ -10,6 +10,14 @@ interface HighRiskUsersListProps {
 }
 
 const HighRiskUsersList: React.FC<HighRiskUsersListProps> = ({ users, onUserClick }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(users.length / itemsPerPage);
+  
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = users.slice(startIndex, endIndex);
+
   return (
     <Card className="col-span-1 lg:col-span-2">
       <CardHeader>
@@ -18,7 +26,7 @@ const HighRiskUsersList: React.FC<HighRiskUsersListProps> = ({ users, onUserClic
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {users.map((user) => (
+          {currentUsers.map((user) => (
             <div 
               key={user.id}
               className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-muted/30 cursor-pointer transition-colors"
@@ -52,6 +60,25 @@ const HighRiskUsersList: React.FC<HighRiskUsersListProps> = ({ users, onUserClic
               </div>
             </div>
           ))}
+          
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center space-x-1 py-4">
+              {[...Array(totalPages)].map((_, i) => (
+                <Button
+                  key={i + 1}
+                  variant={currentPage === i + 1 ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={currentPage === i + 1 ? "" : "hover:bg-secondary"}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+              {totalPages > 5 && (
+                <span className="px-2">...</span>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

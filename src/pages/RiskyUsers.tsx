@@ -5,9 +5,32 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ConfirmationDialog from "@/components/ui-custom/ConfirmationDialog";
+import { ArrowUpDown } from "lucide-react";
+
+interface ConfirmationState {
+  isOpen: boolean;
+  userId: string | null;
+  userName: string | null;
+  action: "block" | "flag" | null;
+}
+
+interface SortConfig {
+  key: string;
+  direction: 'asc' | 'desc';
+}
 
 const RiskyUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("under-review");
+  const [confirmation, setConfirmation] = useState<ConfirmationState>({
+    isOpen: false,
+    userId: null,
+    userName: null,
+    action: null,
+  });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: '', direction: 'asc' });
+
   const itemsPerPage = 10;
 
   const getScoreColor = (score: number) => {
@@ -295,35 +318,150 @@ const RiskyUsers = () => {
     ],
   };
 
+  const handleAction = (action: "block" | "flag", userId: string, userName: string) => {
+    setConfirmation({
+      isOpen: true,
+      userId,
+      userName,
+      action,
+    });
+  };
+
+  const executeAction = () => {
+    if (!confirmation.action || !confirmation.userId) return;
+
+    // In a real application, this would make an API call
+    console.log(`${confirmation.action} user:`, confirmation.userId);
+    
+    setConfirmation({
+      isOpen: false,
+      userId: null,
+      userName: null,
+      action: null,
+    });
+  };
+
+  const closeConfirmation = () => {
+    setConfirmation({
+      isOpen: false,
+      userId: null,
+      userName: null,
+      action: null,
+    });
+  };
+
+  const sortData = (data: any[], key: string, direction: 'asc' | 'desc') => {
+    return [...data].sort((a, b) => {
+      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const handleSort = (key: string) => {
+    setSortConfig(current => ({
+      key,
+      direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
   const UserTable = ({ users, tabType }: { users: typeof mockUsers.underReview, tabType: 'under-review' | 'flagged' | 'blocked' }) => {
     const totalPages = Math.ceil(users.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentUsers = users.slice(startIndex, endIndex);
+    
+    const sortedUsers = sortConfig.key 
+      ? sortData(users, sortConfig.key, sortConfig.direction)
+      : users;
+    
+    const currentUsers = sortedUsers.slice(startIndex, endIndex);
 
-    const renderActions = (tabType: string) => {
+    const SortableHeader = ({ column, label }: { column: string, label: string }) => (
+      <TableHead>
+        <button
+          className="flex items-center gap-1 hover:text-gray-700"
+          onClick={() => handleSort(column)}
+        >
+          {label}
+          <ArrowUpDown className="h-4 w-4" />
+        </button>
+      </TableHead>
+    );
+
+    const renderActions = (tabType: string, user: any) => {
       switch (tabType) {
         case 'under-review':
           return (
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="bg-green-50 hover:bg-green-100 text-green-600">Clear</Button>
-              <Button variant="outline" size="sm" className="bg-red-50 hover:bg-red-100 text-red-600">Flag</Button>
-              <Button variant="outline" size="sm" className="bg-gray-50 hover:bg-gray-100 text-gray-600">Block</Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-green-50 hover:bg-green-100 text-green-600"
+              >
+                Clear
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-orange-50 hover:bg-orange-100 text-orange-600"
+                onClick={() => handleAction("flag", user.id, user.username)}
+              >
+                Flag
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-red-50 hover:bg-red-100 text-red-600"
+                onClick={() => handleAction("block", user.id, user.username)}
+              >
+                Block
+              </Button>
             </div>
           );
         case 'flagged':
           return (
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="bg-green-50 hover:bg-green-100 text-green-600">Clear</Button>
-              <Button variant="outline" size="sm" className="bg-yellow-50 hover:bg-yellow-100 text-yellow-600">Review</Button>
-              <Button variant="outline" size="sm" className="bg-gray-50 hover:bg-gray-100 text-gray-600">Block</Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-green-50 hover:bg-green-100 text-green-600"
+              >
+                Clear
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-orange-50 hover:bg-orange-100 text-orange-600"
+              >
+                Review
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-red-50 hover:bg-red-100 text-red-600"
+                onClick={() => handleAction("block", user.id, user.username)}
+              >
+                Block
+              </Button>
             </div>
           );
         case 'blocked':
           return (
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="bg-green-50 hover:bg-green-100 text-green-600">Unblock</Button>
-              <Button variant="outline" size="sm" className="bg-blue-50 hover:bg-blue-100 text-blue-600">View Comments</Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-green-50 hover:bg-green-100 text-green-600"
+              >
+                Unblock
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-blue-50 hover:bg-blue-100 text-blue-600"
+              >
+                View Comments
+              </Button>
             </div>
           );
         default:
@@ -356,13 +494,13 @@ const RiskyUsers = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User ID</TableHead>
-              <TableHead>Username</TableHead>
-              <TableHead>Risk Score</TableHead>
-              <TableHead>Risk Category</TableHead>
-              <TableHead>Last Activity</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Since (days)</TableHead>
+              <SortableHeader column="id" label="User ID" />
+              <SortableHeader column="username" label="Username" />
+              <SortableHeader column="riskScore" label="Risk Score" />
+              <SortableHeader column="riskCategory" label="Risk Category" />
+              <SortableHeader column="lastActive" label="Last Activity" />
+              <SortableHeader column="location" label="Location" />
+              <SortableHeader column="since" label="Since (days)" />
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -387,14 +525,25 @@ const RiskyUsers = () => {
                 <TableCell className="text-muted-foreground">{user.lastActive}</TableCell>
                 <TableCell>{user.location}</TableCell>
                 <TableCell>{user.since}</TableCell>
-                <TableCell>{renderActions(tabType)}</TableCell>
+                <TableCell>{renderActions(tabType, user)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex items-center justify-between py-4">
+          <div className="text-sm text-muted-foreground">
+            Showing {startIndex + 1} to {Math.min(endIndex, users.length)} of {users.length} entries
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+            >
+              First
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -403,7 +552,7 @@ const RiskyUsers = () => {
             >
               Previous
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground px-2">
               Page {currentPage} of {totalPages}
             </span>
             <Button
@@ -414,69 +563,81 @@ const RiskyUsers = () => {
             >
               Next
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              Last
+            </Button>
           </div>
-        )}
+        </div>
       </>
     );
   };
 
   return (
     <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold text-center">Risky Users</h1>
+      <h1 className="text-3xl font-bold text-center">High Risk Users</h1>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Flagged Users</CardTitle>
-            <CardDescription>High risk users</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-500">127</div>
-            <p className="text-sm text-muted-foreground">+12 from last week</p>
-          </CardContent>
-        </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Under Review</CardTitle>
             <CardDescription>Cases being investigated</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-500">45</div>
-            <p className="text-sm text-muted-foreground">8 new cases today</p>
+            <div className="text-3xl font-bold text-yellow-500">{mockUsers.underReview.length}</div>
+            <p className="text-sm text-muted-foreground">+3 from last week</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Flagged Users</CardTitle>
+            <CardDescription>High risk users</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-500">{mockUsers.flagged.length}</div>
+            <p className="text-sm text-muted-foreground">+5 from last week</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Blocked Users</CardTitle>
+            <CardDescription>Access denied</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-red-500">{mockUsers.blocked.length}</div>
+            <p className="text-sm text-muted-foreground">+2 from last week</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Average Risk Score</CardTitle>
-            <CardDescription>Of flagged users</CardDescription>
+            <CardDescription>All flagged & blocked</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-500">8.1</div>
-            <p className="text-sm text-muted-foreground">+0.3 this week</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Actions Required</CardTitle>
-            <CardDescription>Pending reviews</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">23</div>
-            <p className="text-sm text-muted-foreground">High priority cases</p>
+            <div className="text-3xl font-bold text-red-500">
+              {((mockUsers.flagged.reduce((acc, user) => acc + user.riskScore, 0) + 
+                 mockUsers.blocked.reduce((acc, user) => acc + user.riskScore, 0)) / 
+                (mockUsers.flagged.length + mockUsers.blocked.length)).toFixed(1)}
+            </div>
+            <p className="text-sm text-muted-foreground">+0.4 from last week</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader className="text-center">
-          <CardTitle>High Risk Users</CardTitle>
-          <CardDescription>Users with risk score {">"} 7.5</CardDescription>
+          <CardTitle>List of High Risk Users</CardTitle>
+          <CardDescription>Users with risk score {">"} category defined thresholds</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="under-review" className="space-y-4">
+          <Tabs defaultValue="under-review" className="space-y-4" onValueChange={setActiveTab}>
             <div className="flex justify-center">
               <TabsList>
                 <TabsTrigger value="under-review">Under Review</TabsTrigger>
@@ -485,17 +646,42 @@ const RiskyUsers = () => {
               </TabsList>
             </div>
             <TabsContent value="under-review">
-              <UserTable users={mockUsers.underReview} tabType="under-review" />
+              <div className="border rounded-lg p-4">
+                <UserTable users={mockUsers.underReview} tabType="under-review" />
+              </div>
             </TabsContent>
             <TabsContent value="flagged">
-              <UserTable users={mockUsers.flagged} tabType="flagged" />
+              <div className="border rounded-lg p-4">
+                <UserTable users={mockUsers.flagged} tabType="flagged" />
+              </div>
             </TabsContent>
             <TabsContent value="blocked">
-              <UserTable users={mockUsers.blocked} tabType="blocked" />
+              <div className="border rounded-lg p-4">
+                <UserTable users={mockUsers.blocked} tabType="blocked" />
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmation.isOpen}
+        onClose={closeConfirmation}
+        onConfirm={executeAction}
+        title={
+          confirmation.action === "block"
+            ? "Block User"
+            : "Flag User"
+        }
+        description={
+          confirmation.action === "block"
+            ? `Are you sure you want to block ${confirmation.userName}? This will prevent them from accessing the platform.`
+            : `Are you sure you want to flag ${confirmation.userName} for suspicious activity?`
+        }
+        actionLabel={confirmation.action === "block" ? "Block" : "Flag"}
+        variant="destructive"
+      />
     </div>
   );
 };

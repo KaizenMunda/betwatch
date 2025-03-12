@@ -45,7 +45,7 @@ interface Column {
 interface UserListTableProps {
   users: User[];
   columns: Column[];
-  title: string;
+  title?: string;
   description?: string;
 }
 
@@ -62,12 +62,14 @@ const UserListTable = ({ users, columns, title, description }: UserListTableProp
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">{title}</h2>
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      {title && (
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold">{title}</h2>
+            {description && <p className="text-sm text-muted-foreground">{description}</p>}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex gap-4 mb-4">
         <Input
@@ -118,20 +120,23 @@ const UserListTable = ({ users, columns, title, description }: UserListTableProp
                     variant="outline"
                     size="sm"
                     onClick={() => handleAction(user.id, "review")}
+                    className="bg-green-50 hover:bg-green-100 text-green-600"
                   >
                     Review
                   </Button>
                   <Button
-                    variant="destructive"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleAction(user.id, "flag")}
+                    className="bg-orange-50 hover:bg-orange-100 text-orange-600"
                   >
                     Flag
                   </Button>
                   <Button
-                    variant="destructive"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleAction(user.id, "block")}
+                    className="bg-red-50 hover:bg-red-100 text-red-600"
                   >
                     Block
                   </Button>

@@ -17,6 +17,7 @@ import Index from "@/pages/Index";
 import Search from "@/pages/Search";
 import UserProfile from "@/pages/UserProfile";
 import Overview from "@/pages/Overview";
+import UserActionHistory from "@/pages/UserActionHistory";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
               <Route path="/indicators/mouse-movement" element={<MouseMovement />} />
               <Route path="/risk-thresholds" element={<RiskThresholds />} />
               <Route path="/user-management" element={<AdminUserManagement />} />
+              <Route path="/user-action-history/:userId?" element={<UserActionHistory />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

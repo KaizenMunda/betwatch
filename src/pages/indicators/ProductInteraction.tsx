@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { TablePagination } from "@/components/ui-custom/TablePagination";
 
 const ProductInteraction = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const interactionStats = {
     totalInteractions: 156789,
     averageSessionDuration: "28 minutes",
@@ -142,103 +147,137 @@ const ProductInteraction = () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Interaction Patterns</CardTitle>
-          <CardDescription>Analysis of user behavior patterns</CardDescription>
+          <CardTitle>Interaction Analysis</CardTitle>
+          <CardDescription>Detailed behavior patterns and risk assessment</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Pattern</TableHead>
-                <TableHead>Occurrences</TableHead>
-                <TableHead>Risk Score</TableHead>
-                <TableHead>Risk Level</TableHead>
-                <TableHead>Impact</TableHead>
-                <TableHead>Trend</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {interactionStats.patterns.map((pattern) => (
-                <TableRow key={pattern.name}>
-                  <TableCell className="font-medium">{pattern.name}</TableCell>
-                  <TableCell>{pattern.occurrences.toLocaleString()}</TableCell>
-                  <TableCell>
-                    <span className={`font-bold ${getScoreColor(pattern.riskScore)}`}>
-                      {pattern.riskScore.toFixed(1)}
-                    </span>
-                  </TableCell>
-                  <TableCell className="w-[200px]">
-                    <Progress
-                      value={pattern.riskScore * 10}
-                      className={getProgressColor(pattern.riskScore)}
-                    />
-                  </TableCell>
-                  <TableCell>{pattern.impact}</TableCell>
-                  <TableCell>
-                    <span className={getTrendColor(pattern.trend)}>
-                      {pattern.trend}
-                    </span>
-                  </TableCell>
+        <CardContent className="space-y-6">
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Interaction Patterns</h3>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-green-50 hover:bg-green-100 text-green-600"
+                >
+                  Review
+                </Button>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="bg-orange-50 hover:bg-orange-100 text-orange-600"
+                >
+                  Flag
+                </Button>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="bg-red-50 hover:bg-red-100 text-red-600"
+                >
+                  Block
+                </Button>
+              </div>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Pattern</TableHead>
+                  <TableHead>Occurrences</TableHead>
+                  <TableHead>Risk Score</TableHead>
+                  <TableHead>Risk Level</TableHead>
+                  <TableHead>Impact</TableHead>
+                  <TableHead>Trend</TableHead>
                 </TableRow>
+              </TableHeader>
+              <TableBody>
+                {interactionStats.patterns.map((pattern) => (
+                  <TableRow key={pattern.name}>
+                    <TableCell className="font-medium">{pattern.name}</TableCell>
+                    <TableCell>{pattern.occurrences.toLocaleString()}</TableCell>
+                    <TableCell>
+                      <span className={`font-bold ${getScoreColor(pattern.riskScore)}`}>
+                        {pattern.riskScore.toFixed(1)}
+                      </span>
+                    </TableCell>
+                    <TableCell className="w-[200px]">
+                      <Progress
+                        value={pattern.riskScore * 10}
+                        className={getProgressColor(pattern.riskScore)}
+                      />
+                    </TableCell>
+                    <TableCell>{pattern.impact}</TableCell>
+                    <TableCell>
+                      <span className={getTrendColor(pattern.trend)}>
+                        {pattern.trend}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <div className="flex items-center justify-center space-x-1 py-4">
+              {[...Array(Math.ceil(interactionStats.patterns.length / itemsPerPage))].map((_, i) => (
+                <Button
+                  key={i + 1}
+                  variant={currentPage === i + 1 ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={currentPage === i + 1 ? "" : "hover:bg-secondary"}
+                >
+                  {i + 1}
+                </Button>
               ))}
-            </TableBody>
-          </Table>
+              {Math.ceil(interactionStats.patterns.length / itemsPerPage) > 5 && (
+                <span className="px-2">...</span>
+              )}
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Time Distribution</h3>
+              <div className="space-y-4">
+                {interactionStats.timeDistribution.map((period) => (
+                  <div key={period.time} className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">{period.time}</span>
+                      <span className="text-muted-foreground">{period.percentage}%</span>
+                    </div>
+                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary"
+                        style={{ width: `${period.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Risk Distribution</h3>
+              <div className="space-y-4">
+                {interactionStats.patterns.map((pattern) => (
+                  <div key={pattern.name} className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">{pattern.name}</span>
+                      <span className={`font-bold ${getScoreColor(pattern.riskScore)}`}>
+                        {pattern.riskScore.toFixed(1)}
+                      </span>
+                    </div>
+                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${getProgressColor(pattern.riskScore)}`}
+                        style={{ width: `${(pattern.riskScore / 10) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Time Distribution</CardTitle>
-            <CardDescription>Activity across day periods</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {interactionStats.timeDistribution.map((period) => (
-                <div key={period.time} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">{period.time}</span>
-                    <span className="text-muted-foreground">{period.percentage}%</span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary"
-                      style={{ width: `${period.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Risk Distribution</CardTitle>
-            <CardDescription>Pattern severity breakdown</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {interactionStats.patterns.map((pattern) => (
-                <div key={pattern.name} className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="font-medium">{pattern.name}</span>
-                    <span className={`font-bold ${getScoreColor(pattern.riskScore)}`}>
-                      {pattern.riskScore.toFixed(1)}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${getProgressColor(pattern.riskScore)}`}
-                      style={{ width: `${(pattern.riskScore / 10) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 };
