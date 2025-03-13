@@ -29,10 +29,7 @@ function App() {
           <main className="flex-1 overflow-y-auto">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/search" element={<Search />} />
-              <Route path="/users/:userId" element={<UserProfile />} />
               <Route path="/risk-scores" element={<RiskScores />} />
-              <Route path="/risky-users" element={<RiskyUsers />} />
               <Route path="/indicators/game-theme" element={<GameTheme />} />
               <Route path="/indicators/product-interaction" element={<ProductInteraction />} />
               <Route path="/indicators/system-details" element={<SystemDetails />} />
@@ -41,6 +38,12 @@ function App() {
               <Route path="/risk-thresholds" element={<RiskThresholds />} />
               <Route path="/user-management" element={<AdminUserManagement />} />
               <Route path="/user-action-history/:userId?" element={<UserActionHistory />} />
+
+              {/* Take Actions Section */}
+              <Route path="/search" element={<Search />} />
+              <Route path="/risky-users" element={<RiskyUsers />} />
+
+              <Route path="/users/:userId" element={<UserProfile />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

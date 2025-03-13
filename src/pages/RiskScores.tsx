@@ -188,7 +188,7 @@ const RiskScores = () => {
       <Card>
         <CardHeader>
           <CardTitle>Risk Analysis</CardTitle>
-          <CardDescription>Category-wise risk analysis and high-risk users</CardDescription>
+          <CardDescription>Category-wise risk analysis and high-risk users for last 30 days</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="Bot Detection">

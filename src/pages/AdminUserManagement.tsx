@@ -253,6 +253,46 @@ const AdminUserManagement = () => {
         </CardContent>
       </Card>
 
+      {/* Email and Channel Alerts Configuration Section */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Email and Channel Alerts</CardTitle>
+          <CardDescription>Configure alerts by types</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-muted-foreground">Alert Type</div>
+              <Select defaultValue="email">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select alert type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="sms">SMS</SelectItem>
+                  <SelectItem value="push">Push Notification</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-muted-foreground">Channel</div>
+              <Select defaultValue="all">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select channel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Channels</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="sms">SMS</SelectItem>
+                  <SelectItem value="push">Push Notification</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="default" onClick={() => console.log('Configuring alerts')}>Configure Alerts</Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Add New User Section */}
       <Card>
         <CardHeader>

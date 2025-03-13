@@ -157,7 +157,7 @@ const UserProfile = () => {
           <div className="flex gap-2">
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-blue-600 border-blue-600 hover:bg-blue-50">
+                <Button variant="outline" size="sm" className="text-yellow-600 border-yellow-600 hover:bg-yellow-50">
                   <Search className="h-4 w-4 mr-1" />
                   Review User
                 </Button>
@@ -404,7 +404,7 @@ const UserProfile = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="mt-6">
             <CardHeader>
               <CardTitle>Recent Activities</CardTitle>
               <CardDescription>User's recent actions and events</CardDescription>
@@ -605,6 +605,26 @@ const UserProfile = () => {
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Current Balance</div>
+                  <div className="text-2xl font-bold">₹{mockUser.profile.accountBalance.toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Deposits</div>
+                  <div className="text-2xl font-bold">₹{mockTransactions.filter(t => t.type === 'Deposit').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Withdrawals</div>
+                  <div className="text-2xl font-bold">₹{mockTransactions.filter(t => t.type === 'Withdrawal').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Rake</div>
+                  <div className="text-2xl font-bold">₹{mockTransactions.filter(t => t.type === 'Buy-In').reduce((acc, t) => acc + t.amount * 0.05, 0).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Rewards</div>
+                  <div className="text-2xl font-bold">₹{mockTransactions.filter(t => t.type === 'Rewards Conversion').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
                   <div className="text-sm text-muted-foreground">Average Deposit per Month</div>
                   <div className="text-2xl font-bold">₹{(mockTransactions.filter(t => t.type === 'Deposit').reduce((acc, t) => acc + t.amount, 0) / 3).toLocaleString()}</div>
                 </div>
@@ -620,12 +640,25 @@ const UserProfile = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="mt-6">
             <CardHeader>
               <CardTitle>Transaction History</CardTitle>
               <CardDescription>Recent financial activities</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="flex justify-between mb-4">
+                <div>
+                  <label htmlFor="typeFilter" className="text-sm text-muted-foreground">Filter by Type:</label>
+                  <select id="typeFilter" className="ml-2 border rounded p-1">
+                    <option value="">All</option>
+                    <option value="Deposit">Deposit</option>
+                    <option value="Withdrawal">Withdrawal</option>
+                    <option value="Buy-In">Buy-In</option>
+                    <option value="Buy-Out">Buy-Out</option>
+                    <option value="Rewards Conversion">Rewards Conversion</option>
+                  </select>
+                </div>
+              </div>
               <Table>
                 <TableHeader>
                   <TableRow>

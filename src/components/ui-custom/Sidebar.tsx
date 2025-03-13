@@ -23,7 +23,7 @@ export function Sidebar({ className }: SidebarProps) {
   const location = useLocation();
 
   return (
-    <div className={cn("pb-12", className)}>
+    <div className={cn("pb-12 overflow-y-auto h-full", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <h2 className="mb-2 px-4 text-lg font-semibold">Overview</h2>
@@ -50,6 +50,12 @@ export function Sidebar({ className }: SidebarProps) {
               <AlertTriangle className="h-4 w-4" />
               <span>Risk Scores</span>
             </Link>
+          </div>
+        </div>
+
+        <div className="px-3 py-2">
+          <h2 className="mb-2 px-4 text-lg font-semibold">Take Action</h2>
+          <div className="space-y-1">
             <Link
               to="/risky-users"
               className={cn(
