@@ -61,6 +61,7 @@ export interface UserProfile {
   phoneNumber: string;
   verificationStatus: 'verified' | 'pending' | 'unverified';
   totalTransactions: number;
+  totalTournaments: number;
   accountBalance: number;
 }
 
