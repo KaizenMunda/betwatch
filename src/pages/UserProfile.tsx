@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Flag, Ban, Calendar } from "lucide-react";
+import { Flag, Ban, Calendar, Search } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -15,6 +15,54 @@ import type { User } from "@/types/fraudModels";
 const UserProfile = () => {
   const { userId } = useParams();
   const [currentStatus, setCurrentStatus] = React.useState<'active' | 'flagged' | 'blocked'>('active');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Mock transaction data
+  const mockTransactions = [
+    {
+      date: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      type: "Deposit",
+      amount: 50000,
+      status: "completed"
+    },
+    {
+      date: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      type: "Buy-In",
+      amount: 25000,
+      status: "completed"
+    },
+    {
+      date: new Date(Date.now() - 3 * 60 * 60 * 1000),
+      type: "Buy-Out",
+      amount: 35000,
+      status: "completed"
+    },
+    {
+      date: new Date(Date.now() - 4 * 60 * 60 * 1000),
+      type: "Withdrawal",
+      amount: 40000,
+      status: "pending"
+    },
+    {
+      date: new Date(Date.now() - 5 * 60 * 60 * 1000),
+      type: "Rewards Conversion",
+      amount: 5000,
+      status: "completed"
+    },
+    {
+      date: new Date(Date.now() - 6 * 60 * 60 * 1000),
+      type: "Buy-In",
+      amount: 20000,
+      status: "completed"
+    },
+    {
+      date: new Date(Date.now() - 7 * 60 * 60 * 1000),
+      type: "Buy-Out",
+      amount: 30000,
+      status: "completed"
+    }
+  ];
 
   // Mock user data
   const mockUser: User = {
@@ -39,6 +87,7 @@ const UserProfile = () => {
       phoneNumber: "+91 9876543210",
       verificationStatus: "verified",
       totalTransactions: 156,
+      totalTournaments: 36,
       accountBalance: 25000
     },
     activities: [
@@ -88,6 +137,15 @@ const UserProfile = () => {
     }
   };
 
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const paginatedTransactions = mockTransactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
@@ -97,6 +155,29 @@ const UserProfile = () => {
             User ID: {mockUser.id}
           </div>
           <div className="flex gap-2">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-blue-600 border-blue-600 hover:bg-blue-50">
+                  <Search className="h-4 w-4 mr-1" />
+                  Review User
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Review User Account</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to mark this user for review? This will flag their account for detailed investigation.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction className="bg-blue-600">
+                    Review User
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
             {currentStatus !== 'flagged' ? (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
@@ -266,9 +347,63 @@ const UserProfile = () => {
               </CardContent>
             </Card>
           </div>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>User Preferences</CardTitle>
+              <CardDescription>Personalized gaming preferences</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="text-sm text-muted-foreground">VIP Tag</div>
+                  <div className="font-medium">Gold</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Cash / Tournament Preference</div>
+                  <div className="font-medium">Cash</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Primary Game Format</div>
+                  <div className="font-medium">No-Limit Hold'em</div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground">Preferred Stake</div>
+                  <div className="font-medium">₹500/₹1000</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="activity">
+          <Card>
+            <CardHeader>
+              <CardTitle>Activity Summary</CardTitle>
+              <CardDescription>Lifetime and monthly averages</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Cash Hands Played</div>
+                  <div className="text-2xl font-bold">1,200</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Tournaments Played</div>
+                  <div className="text-2xl font-bold">150</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Average Cash Hands per Month</div>
+                  <div className="text-2xl font-bold">100</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Average Tournaments per Month</div>
+                  <div className="text-2xl font-bold">12</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Recent Activities</CardTitle>
@@ -464,6 +599,29 @@ const UserProfile = () => {
         <TabsContent value="transactions">
           <Card>
             <CardHeader>
+              <CardTitle>Transaction Summary</CardTitle>
+              <CardDescription>Monthly averages</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Average Deposit per Month</div>
+                  <div className="text-2xl font-bold">₹{(mockTransactions.filter(t => t.type === 'Deposit').reduce((acc, t) => acc + t.amount, 0) / 3).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Average Withdrawal per Month</div>
+                  <div className="text-2xl font-bold">₹{(mockTransactions.filter(t => t.type === 'Withdrawal').reduce((acc, t) => acc + t.amount, 0) / 3).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Average Rake per Month</div>
+                  <div className="text-2xl font-bold">₹{(mockTransactions.filter(t => t.type === 'Buy-In').reduce((acc, t) => acc + t.amount * 0.05, 0) / 3).toLocaleString()}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Transaction History</CardTitle>
               <CardDescription>Recent financial activities</CardDescription>
             </CardHeader>
@@ -478,24 +636,53 @@ const UserProfile = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockUser.transactionHistory.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        No transactions found
+                  {paginatedTransactions.map((transaction, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        {format(transaction.date, 'MMM d, yyyy HH:mm')}
+                      </TableCell>
+                      <TableCell>
+                        <span className={
+                          transaction.type === 'Deposit' ? 'text-green-600' :
+                          transaction.type === 'Withdrawal' ? 'text-red-600' :
+                          transaction.type === 'Buy-In' ? 'text-blue-600' :
+                          transaction.type === 'Buy-Out' ? 'text-purple-600' :
+                          'text-orange-600'
+                        }>
+                          {transaction.type}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className={transaction.type === 'Withdrawal' ? 'text-red-600' : 'text-green-600'}>
+                          ₹{transaction.amount.toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className={
+                          transaction.status === 'completed' ? 'text-green-600' :
+                          transaction.status === 'pending' ? 'text-yellow-600' :
+                          'text-red-600'
+                        }>
+                          {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                        </span>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    mockUser.transactionHistory.map((transaction, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{transaction.date.toLocaleDateString()}</TableCell>
-                        <TableCell>{transaction.type}</TableCell>
-                        <TableCell>₹{transaction.amount}</TableCell>
-                        <TableCell>{transaction.status}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
+                  ))}
                 </TableBody>
               </Table>
+              <div className="flex justify-center mt-4">
+                {Array.from({ length: Math.ceil(mockTransactions.length / itemsPerPage) }, (_, i) => (
+                  <Button
+                    key={i + 1}
+                    variant={currentPage === i + 1 ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(i + 1)}
+                    className={currentPage === i + 1 ? "" : "hover:bg-secondary"}
+                  >
+                    {i + 1}
+                  </Button>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
