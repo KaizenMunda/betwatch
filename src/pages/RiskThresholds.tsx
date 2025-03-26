@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { useNavigate } from "react-router-dom";
+import { History } from "lucide-react";
 
 interface ThresholdSettings {
   review: number;
@@ -52,6 +54,7 @@ const defaultWeights: Record<string, WeightSettings> = {
 };
 
 const RiskThresholds = () => {
+  const navigate = useNavigate();
   const [thresholds, setThresholds] = React.useState<Record<string, ThresholdSettings>>({
     bot: { review: 5.0, autoFlag: 8.0, autoBlock: 9.0 },
     dumping: { review: 5.0, autoFlag: 8.0, autoBlock: 9.0 },
@@ -266,9 +269,17 @@ const RiskThresholds = () => {
         <div>
           <h1 className="text-3xl font-bold">Risk Thresholds</h1>
           <p className="text-muted-foreground">
-            Configure risk score thresholds and weights for automated actions
+            Configure and monitor risk score thresholds
           </p>
         </div>
+        <Button
+          onClick={() => navigate("/risk-threshold-history")}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <History className="h-4 w-4" />
+          View History
+        </Button>
       </div>
 
       <Card>

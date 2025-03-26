@@ -5,8 +5,12 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useNavigate } from "react-router-dom";
+import { History } from "lucide-react";
 
 const RiskScores = () => {
+  const navigate = useNavigate();
+
   const getScoreColor = (score: number) => {
     if (score >= 7.5) return "text-red-500";
     if (score >= 5) return "text-yellow-500";
@@ -96,7 +100,22 @@ const RiskScores = () => {
 
   return (
     <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Risk Scores</h1>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Risk Thresholds</h1>
+          <p className="text-muted-foreground">
+            Configure and monitor risk score thresholds
+          </p>
+        </div>
+        <Button
+          onClick={() => navigate("/risk-threshold-history")}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <History className="h-4 w-4" />
+          View History
+        </Button>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>

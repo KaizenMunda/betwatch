@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
@@ -16,6 +15,7 @@ interface StatCardProps {
     timeframe: string;
   };
   className?: string;
+  isNegativeChange?: boolean;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -27,14 +27,15 @@ const StatCard: React.FC<StatCardProps> = ({
   iconBackground = "bg-primary/10",
   change,
   className,
+  isNegativeChange = true,
 }) => {
-  const isPositiveChange = change ? change.value >= 0 : undefined;
+  const isPositiveChange = change ? (isNegativeChange ? change.value >= 0 : change.value <= 0) : undefined;
   
   return (
     <Card className={cn("overflow-hidden scale-on-hover", className)}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-center">
-          <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+          <CardTitle>{title}</CardTitle>
           {Icon && (
             <div className={cn("p-2 rounded-full", iconBackground)}>
               <Icon size={16} className={iconColor} />

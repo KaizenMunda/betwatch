@@ -1,264 +1,203 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { TablePagination } from "@/components/ui-custom/TablePagination";
+import { Search } from "lucide-react";
+import { format } from "date-fns";
+
+// Mock data for game theme selections
+const mockThemeData = [
+  {
+    date: new Date(Date.now() - 1 * 60 * 60 * 1000),
+    username: "john_doe",
+    userId: "12345",
+    deviceType: "Mobile",
+    botScore: 2.5,
+    selectedTheme: "classic"
+  },
+  {
+    date: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    username: "jane_smith",
+    userId: "12346",
+    deviceType: "Desktop",
+    botScore: 1.8,
+    selectedTheme: "minimal"
+  },
+  {
+    date: new Date(Date.now() - 3 * 60 * 60 * 1000),
+    username: "mike_wilson",
+    userId: "12347",
+    deviceType: "Mobile",
+    botScore: 3.2,
+    selectedTheme: "4 color"
+  },
+  {
+    date: new Date(Date.now() - 4 * 60 * 60 * 1000),
+    username: "sarah_jones",
+    userId: "12348",
+    deviceType: "Desktop",
+    botScore: 4.5,
+    selectedTheme: "full colour"
+  },
+  // Add more mock data as needed
+];
 
 const GameTheme = () => {
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
-  const gameStats = {
-    totalGames: 48,
-    activeGames: 35,
-    totalPlayers: 12567,
-    averageRiskScore: 4.2,
-    gameCategories: [
-      {
-        name: "Poker",
-        players: 5234,
-        riskScore: 6.8,
-        activeUsers: 1245,
-        suspiciousActivities: 89
-      },
-      {
-        name: "Slots",
-        players: 3456,
-        riskScore: 3.5,
-        activeUsers: 890,
-        suspiciousActivities: 23
-      },
-      {
-        name: "Blackjack",
-        players: 2145,
-        riskScore: 5.9,
-        activeUsers: 567,
-        suspiciousActivities: 45
-      },
-      {
-        name: "Roulette",
-        players: 1732,
-        riskScore: 4.2,
-        activeUsers: 432,
-        suspiciousActivities: 28
-      }
-    ]
+
+  // Filter data based on search query
+  const filteredData = mockThemeData.filter(item => 
+    item.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.userId.includes(searchQuery)
+  );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filteredData.slice(startIndex, endIndex);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page on new search
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 7.5) return "text-red-500";
-    if (score >= 5) return "text-yellow-500";
-    return "text-green-500";
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const getProgressColor = (score: number) => {
-    if (score >= 7.5) return "bg-red-500";
-    if (score >= 5) return "bg-yellow-500";
-    return "bg-green-500";
+  const getThemeColor = (theme: string) => {
+    switch (theme) {
+      case "classic":
+        return "text-blue-600";
+      case "minimal":
+        return "text-gray-600";
+      case "4 color":
+        return "text-purple-600";
+      case "full colour":
+        return "text-green-600";
+      default:
+        return "text-gray-600";
+    }
   };
 
   return (
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Game Theme Indicators</h1>
-        <div className="flex gap-4">
-          <Select defaultValue="7d">
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Time Period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="24h">Last 24 Hours</SelectItem>
-              <SelectItem value="7d">Last 7 Days</SelectItem>
-              <SelectItem value="30d">Last 30 Days</SelectItem>
-              <SelectItem value="90d">Last 90 Days</SelectItem>
-            </SelectContent>
-          </Select>
+        <div>
+          <h1 className="text-3xl font-bold">Game Theme Analysis</h1>
+          <p className="text-muted-foreground">
+            Track user theme selections and associated bot scores
+          </p>
         </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Games</CardTitle>
-            <CardDescription>Active game types</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{gameStats.totalGames}</div>
-            <p className="text-sm text-muted-foreground">
-              {gameStats.activeGames} currently active
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Players</CardTitle>
-            <CardDescription>Across all games</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{gameStats.totalPlayers}</div>
-            <p className="text-sm text-muted-foreground">+234 from last week</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Average Risk Score</CardTitle>
-            <CardDescription>All game types</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-bold ${getScoreColor(gameStats.averageRiskScore)}`}>
-              {gameStats.averageRiskScore.toFixed(1)}
-            </div>
-            <p className="text-sm text-muted-foreground">-0.3 from last week</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>High Risk Games</CardTitle>
-            <CardDescription>Score {">"} 7.5</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-500">2</div>
-            <p className="text-sm text-muted-foreground">Requires attention</p>
-          </CardContent>
-        </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Game Analysis</CardTitle>
-          <CardDescription>Detailed game statistics and risk assessment</CardDescription>
+          <CardTitle>Theme Selection History</CardTitle>
+          <CardDescription>
+            View and analyze user theme preferences
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Game Categories</h3>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="bg-green-50 hover:bg-green-100 text-green-600"
-                >
-                  Review
-                </Button>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="bg-orange-50 hover:bg-orange-100 text-orange-600"
-                >
-                  Flag
-                </Button>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="bg-red-50 hover:bg-red-100 text-red-600"
-                >
-                  Block
-                </Button>
+        <CardContent>
+          <form onSubmit={handleSearch} className="mb-6">
+            <div className="flex gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by username or user ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
               </div>
+              <Button type="submit">Search</Button>
             </div>
+          </form>
+
+          <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Game Type</TableHead>
-                  <TableHead>Players</TableHead>
-                  <TableHead>Risk Score</TableHead>
-                  <TableHead>Risk Level</TableHead>
-                  <TableHead>Active Users</TableHead>
-                  <TableHead>Suspicious Activities</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Username</TableHead>
+                  <TableHead>User ID</TableHead>
+                  <TableHead>Device Type</TableHead>
+                  <TableHead>Bot Score</TableHead>
+                  <TableHead>Selected Theme</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {gameStats.gameCategories.map((game) => (
-                  <TableRow key={game.name}>
-                    <TableCell className="font-medium">{game.name}</TableCell>
-                    <TableCell>{game.players.toLocaleString()}</TableCell>
+                {paginatedData.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{format(item.date, 'MMM d, yyyy HH:mm')}</TableCell>
+                    <TableCell>{item.username}</TableCell>
+                    <TableCell>{item.userId}</TableCell>
                     <TableCell>
-                      <span className={`font-bold ${getScoreColor(game.riskScore)}`}>
-                        {game.riskScore.toFixed(1)}
+                      <span className={item.deviceType === "Mobile" ? "text-blue-600" : "text-purple-600"}>
+                        {item.deviceType}
                       </span>
                     </TableCell>
-                    <TableCell className="w-[200px]">
-                      <Progress
-                        value={game.riskScore * 10}
-                        className={getProgressColor(game.riskScore)}
-                      />
-                    </TableCell>
-                    <TableCell>{game.activeUsers.toLocaleString()}</TableCell>
                     <TableCell>
-                      <span className={game.suspiciousActivities > 50 ? "text-red-500" : "text-yellow-500"}>
-                        {game.suspiciousActivities}
+                      <span className={item.botScore >= 7.5 ? "text-red-500" : 
+                        item.botScore >= 5 ? "text-yellow-500" : "text-green-500"}>
+                        {item.botScore.toFixed(1)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={getThemeColor(item.selectedTheme)}>
+                        {item.selectedTheme}
                       </span>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-            <div className="flex items-center justify-center space-x-1 py-4">
-              {[...Array(Math.ceil(gameStats.gameCategories.length / itemsPerPage))].map((_, i) => (
-                <Button
-                  key={i + 1}
-                  variant={currentPage === i + 1 ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={currentPage === i + 1 ? "" : "hover:bg-secondary"}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-              {Math.ceil(gameStats.gameCategories.length / itemsPerPage) > 5 && (
-                <span className="px-2">...</span>
-              )}
-            </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Risk Distribution</h3>
-              <div className="space-y-4">
-                {gameStats.gameCategories.map((game) => (
-                  <div key={game.name} className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="font-medium">{game.name}</span>
-                      <span className={`font-bold ${getScoreColor(game.riskScore)}`}>
-                        {game.riskScore.toFixed(1)}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${getProgressColor(game.riskScore)}`}
-                        style={{ width: `${(game.riskScore / 10) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredData.length)} of {filteredData.length} entries
             </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Player Distribution</h3>
-              <div className="space-y-4">
-                {gameStats.gameCategories.map((game) => (
-                  <div key={game.name} className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="font-medium">{game.name}</span>
-                      <span className="text-muted-foreground">
-                        {((game.players / gameStats.totalPlayers) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary"
-                        style={{ width: `${(game.players / gameStats.totalPlayers) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground px-2">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </Button>
             </div>
           </div>
         </CardContent>

@@ -7,6 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ConfirmationDialog from "@/components/ui-custom/ConfirmationDialog";
 import { ArrowUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import WhitelistDialog from "@/components/ui-custom/WhitelistDialog";
 
 interface ConfirmationState {
   isOpen: boolean;
@@ -20,6 +26,19 @@ interface SortConfig {
   direction: 'asc' | 'desc';
 }
 
+interface WhitelistState {
+  isOpen: boolean;
+  userId: string | null;
+  userName: string | null;
+}
+
+const timeRanges = [
+  { value: "week", label: "Current Week" },
+  { value: "month", label: "Current Month" },
+  { value: "quarter", label: "Current Quarter" },
+  { value: "custom", label: "Custom Range" },
+];
+
 const RiskyUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("under-review");
@@ -30,6 +49,13 @@ const RiskyUsers = () => {
     action: null,
   });
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: '', direction: 'asc' });
+  const [timeRange, setTimeRange] = useState("week");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [whitelistDialog, setWhitelistDialog] = useState<WhitelistState>({
+    isOpen: false,
+    userId: null,
+    userName: null,
+  });
 
   const itemsPerPage = 10;
 
@@ -350,6 +376,38 @@ const RiskyUsers = () => {
     });
   };
 
+  const handleClear = (userId: string, userName: string) => {
+    setWhitelistDialog({
+      isOpen: true,
+      userId,
+      userName,
+    });
+  };
+
+  const handleWhitelistConfirm = (whitelist: boolean, notes: string) => {
+    if (!whitelistDialog.userId) return;
+
+    // In a real application, this would make an API call
+    console.log(`Clear user:`, whitelistDialog.userId, {
+      whitelist,
+      notes,
+    });
+    
+    setWhitelistDialog({
+      isOpen: false,
+      userId: null,
+      userName: null,
+    });
+  };
+
+  const closeWhitelistDialog = () => {
+    setWhitelistDialog({
+      isOpen: false,
+      userId: null,
+      userName: null,
+    });
+  };
+
   const sortData = (data: any[], key: string, direction: 'asc' | 'desc') => {
     return [...data].sort((a, b) => {
       if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
@@ -363,6 +421,16 @@ const RiskyUsers = () => {
       key,
       direction: current.key === key && current.direction === 'asc' ? 'desc' : 'asc'
     }));
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  const handleTimeRangeChange = (value: string) => {
+    setTimeRange(value);
   };
 
   const UserTable = ({ users, tabType }: { users: typeof mockUsers.underReview, tabType: 'under-review' | 'flagged' | 'blocked' }) => {
@@ -397,6 +465,7 @@ const RiskyUsers = () => {
                 variant="outline" 
                 size="sm" 
                 className="bg-green-50 hover:bg-green-100 text-green-600"
+                onClick={() => handleClear(user.id, user.username)}
               >
                 Clear
               </Button>
@@ -425,6 +494,7 @@ const RiskyUsers = () => {
                 variant="outline" 
                 size="sm" 
                 className="bg-green-50 hover:bg-green-100 text-green-600"
+                onClick={() => handleClear(user.id, user.username)}
               >
                 Clear
               </Button>
@@ -500,7 +570,7 @@ const RiskyUsers = () => {
               <SortableHeader column="riskCategory" label="Risk Category" />
               <SortableHeader column="lastActive" label="Last Activity" />
               <SortableHeader column="location" label="Location" />
-              <SortableHeader column="since" label="Since (days)" />
+              <SortableHeader column="since" label="Active Since (days)" />
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -632,9 +702,34 @@ const RiskyUsers = () => {
       </div>
 
       <Card>
-        <CardHeader className="text-center">
-          <CardTitle>List of High Risk Users</CardTitle>
-          <CardDescription>Users with risk score {">"} category defined thresholds</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle>List of High Risk Users</CardTitle>
+            <CardDescription>Users with risk score {">"} category defined thresholds</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-[240px] justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(selectedDate, "LLL dd, y")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  initialFocus
+                  mode="single"
+                  defaultMonth={selectedDate}
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  numberOfMonths={1}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="under-review" className="space-y-4" onValueChange={setActiveTab}>
@@ -681,6 +776,14 @@ const RiskyUsers = () => {
         }
         actionLabel={confirmation.action === "block" ? "Block" : "Flag"}
         variant="destructive"
+      />
+
+      {/* Whitelist Dialog */}
+      <WhitelistDialog
+        isOpen={whitelistDialog.isOpen}
+        onClose={closeWhitelistDialog}
+        onConfirm={handleWhitelistConfirm}
+        userName={whitelistDialog.userName || ""}
       />
     </div>
   );

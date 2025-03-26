@@ -11,12 +11,16 @@ import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import type { User } from "@/types/fraudModels";
+import { ResponsiveContainer, LineChart, XAxis, YAxis, Tooltip, Line, Legend } from "recharts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const UserProfile = () => {
   const { userId } = useParams();
   const [currentStatus, setCurrentStatus] = React.useState<'active' | 'flagged' | 'blocked'>('active');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+  const [activeTab, setActiveTab] = useState("overview");
+  const [handRange, setHandRange] = useState("1000");
 
   // Mock transaction data
   const mockTransactions = [
@@ -146,6 +150,27 @@ const UserProfile = () => {
     currentPage * itemsPerPage
   );
 
+  // Update the win rate data to include negative values and intersections
+  const winRateData = [
+    { hands: 0, rate: 0, evRate: 0 },
+    { hands: 100, rate: -1.5, evRate: -0.8 },
+    { hands: 200, rate: 1.2, evRate: 0.5 },
+    { hands: 300, rate: 0.8, evRate: 1.2 },
+    { hands: 400, rate: 2.5, evRate: 1.8 },
+    { hands: 500, rate: 1.6, evRate: 2.1 },
+    { hands: 600, rate: -0.5, evRate: 0.3 },
+    { hands: 700, rate: 1.8, evRate: 1.8 },
+    { hands: 800, rate: 2.4, evRate: 1.5 },
+    { hands: 900, rate: 1.2, evRate: 2.0 },
+    { hands: 1000, rate: 2.8, evRate: 2.2 }
+  ];
+
+  // Filter data based on selected hand range
+  const getFilteredData = () => {
+    const maxHands = parseInt(handRange);
+    return winRateData.filter(item => item.hands <= maxHands);
+  };
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
@@ -164,9 +189,9 @@ const UserProfile = () => {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Review User Account</AlertDialogTitle>
+                  <AlertDialogTitle>Review {mockUser.name}'s Account</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to mark this user for review? This will flag their account for detailed investigation.
+                    Are you sure you want to mark {mockUser.name} for review? This will flag their account for detailed investigation.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -188,9 +213,9 @@ const UserProfile = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Flag User Account</AlertDialogTitle>
+                    <AlertDialogTitle>Flag {mockUser.name}'s Account</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to flag this user? This will mark their account for review.
+                      Are you sure you want to flag {mockUser.name}? This will mark their account for review.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -211,9 +236,9 @@ const UserProfile = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Remove Flag from User</AlertDialogTitle>
+                    <AlertDialogTitle>Remove Flag from {mockUser.name}'s Account</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to remove the flag from this user?
+                      Are you sure you want to remove the flag from {mockUser.name}'s account?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -236,9 +261,9 @@ const UserProfile = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Block User Account</AlertDialogTitle>
+                    <AlertDialogTitle>Block {mockUser.name}'s Account</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to block this user? This will prevent them from accessing their account.
+                      Are you sure you want to block {mockUser.name}? This will prevent them from accessing their account.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -259,9 +284,9 @@ const UserProfile = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Unblock User Account</AlertDialogTitle>
+                    <AlertDialogTitle>Unblock {mockUser.name}'s Account</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to unblock this user? This will restore their account access.
+                      Are you sure you want to unblock {mockUser.name}? This will restore their account access.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -278,10 +303,13 @@ const UserProfile = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-7 gap-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="winnability">Winnability</TabsTrigger>
           <TabsTrigger value="risk">Risk Analysis</TabsTrigger>
+          <TabsTrigger value="network">Network</TabsTrigger>
+          <TabsTrigger value="device">Device</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
         </TabsList>
 
@@ -430,6 +458,126 @@ const UserProfile = () => {
                   ))}
                 </TableBody>
               </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="winnability" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="text-2xl">Winnability Analysis</CardTitle>
+                <CardDescription>
+                  Track win rates and expected value over time
+                </CardDescription>
+              </div>
+              <Select value={handRange} onValueChange={setHandRange}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select hand range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1000">Last 1000 hands</SelectItem>
+                  <SelectItem value="10000">Last 10000 hands</SelectItem>
+                  <SelectItem value="1000000">Last 1000000 hands</SelectItem>
+                  <SelectItem value="lifetime">Lifetime</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Win Rate</div>
+                  <div className="text-3xl font-bold text-green-500">65.8%</div>
+                  <p className="text-sm text-muted-foreground">+2.3% from last month</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Average Win</div>
+                  <div className="text-3xl font-bold text-green-500">$2,450</div>
+                  <p className="text-sm text-muted-foreground">+$150 from last month</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Profit Factor</div>
+                  <div className="text-3xl font-bold text-green-500">2.1</div>
+                  <p className="text-sm text-muted-foreground">+0.2 from last month</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Best Win Streak</div>
+                  <div className="text-3xl font-bold text-green-500">8</div>
+                  <p className="text-sm text-muted-foreground">Current streak: 3</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Average Session Length</div>
+                  <div className="text-3xl font-bold text-blue-500">2.5h</div>
+                  <p className="text-sm text-muted-foreground">-0.3h from last month</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Risk Level</div>
+                  <div className="text-3xl font-bold text-yellow-500">Medium</div>
+                  <p className="text-sm text-muted-foreground">Stable for 3 months</p>
+                </div>
+              </div>
+
+              <div className="border-t pt-6">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold">Win Rate Trend</h3>
+                  <p className="text-sm text-muted-foreground">Track win rate and EV win rate over time</p>
+                </div>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart 
+                      data={getFilteredData()}
+                      margin={{ top: 20, right: 30, left: 80, bottom: 50 }}
+                    >
+                      <XAxis 
+                        dataKey="hands" 
+                        label={{ 
+                          value: "Number of Hands", 
+                          position: "insideBottom",
+                          offset: -10
+                        }}
+                      />
+                      <YAxis 
+                        label={{ 
+                          value: "Win Rate (BB/100 hands)", 
+                          angle: -90, 
+                          position: "outside",
+                          offset: -60
+                        }}
+                        domain={['auto', 'auto']}
+                        padding={{ top: 20, bottom: 20 }}
+                      />
+                      <Tooltip />
+                      <Legend 
+                        verticalAlign="top" 
+                        height={36}
+                        wrapperStyle={{
+                          paddingTop: "10px",
+                          paddingBottom: "20px"
+                        }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="rate"
+                        stroke="#22c55e"
+                        name="Win Rate"
+                        dot={{ r: 4 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="evRate"
+                        stroke="#3b82f6"
+                        name="EV Win Rate"
+                        dot={{ r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -592,6 +740,370 @@ const UserProfile = () => {
                   </TabsContent>
                 ))}
               </Tabs>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="network" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Network Analysis</CardTitle>
+              <CardDescription>
+                User's network activity and connection patterns
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">IP Addresses</div>
+                  <div className="text-3xl font-bold">4</div>
+                  <p className="text-sm text-muted-foreground">Unique IPs in last 30 days</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Locations</div>
+                  <div className="text-3xl font-bold">2</div>
+                  <p className="text-sm text-muted-foreground">Different locations detected</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">VPN Usage</div>
+                  <div className="text-3xl font-bold text-yellow-500">12%</div>
+                  <p className="text-sm text-muted-foreground">Of total connections</p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>IP Address</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead>First Seen</TableHead>
+                      <TableHead>Last Seen</TableHead>
+                      <TableHead>Connection Type</TableHead>
+                      <TableHead>Risk Level</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>192.168.1.100</TableCell>
+                      <TableCell>New York, US</TableCell>
+                      <TableCell>Mar 15, 2024</TableCell>
+                      <TableCell>Mar 20, 2024</TableCell>
+                      <TableCell>Residential</TableCell>
+                      <TableCell>
+                        <span className="text-green-500">Low</span>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>10.0.0.123</TableCell>
+                      <TableCell>London, UK</TableCell>
+                      <TableCell>Mar 16, 2024</TableCell>
+                      <TableCell>Mar 16, 2024</TableCell>
+                      <TableCell>VPN</TableCell>
+                      <TableCell>
+                        <span className="text-yellow-500">Medium</span>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>172.16.0.234</TableCell>
+                      <TableCell>New York, US</TableCell>
+                      <TableCell>Mar 17, 2024</TableCell>
+                      <TableCell>Mar 19, 2024</TableCell>
+                      <TableCell>Mobile</TableCell>
+                      <TableCell>
+                        <span className="text-green-500">Low</span>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>192.168.2.150</TableCell>
+                      <TableCell>Toronto, CA</TableCell>
+                      <TableCell>Mar 18, 2024</TableCell>
+                      <TableCell>Mar 18, 2024</TableCell>
+                      <TableCell>Data Center</TableCell>
+                      <TableCell>
+                        <span className="text-red-500">High</span>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Connection Types Distribution</CardTitle>
+                    <CardDescription>
+                      Breakdown of different connection types used
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">Residential</span>
+                          <span>45%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-green-500" style={{ width: '45%' }} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">Mobile</span>
+                          <span>30%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500" style={{ width: '30%' }} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">VPN</span>
+                          <span>12%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-yellow-500" style={{ width: '12%' }} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">Data Center</span>
+                          <span>13%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-red-500" style={{ width: '13%' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Location History</CardTitle>
+                    <CardDescription>
+                      Geographic distribution of connections
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">New York, US</span>
+                          <span>65%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: '65%' }} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">London, UK</span>
+                          <span>20%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: '20%' }} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">Toronto, CA</span>
+                          <span>15%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-primary" style={{ width: '15%' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="device" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Device Analysis</CardTitle>
+              <CardDescription>
+                User's device usage patterns and history
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Total Devices</div>
+                  <div className="text-3xl font-bold">3</div>
+                  <p className="text-sm text-muted-foreground">Unique devices in last 30 days</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Primary Device</div>
+                  <div className="text-3xl font-bold">Mobile</div>
+                  <p className="text-sm text-muted-foreground">Most frequently used</p>
+                </div>
+
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="text-sm text-muted-foreground">Device Switches</div>
+                  <div className="text-3xl font-bold text-yellow-500">8</div>
+                  <p className="text-sm text-muted-foreground">In last 30 days</p>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Device Type</TableHead>
+                      <TableHead>Browser/App</TableHead>
+                      <TableHead>Operating System</TableHead>
+                      <TableHead>First Used</TableHead>
+                      <TableHead>Last Used</TableHead>
+                      <TableHead>Usage %</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>Mobile</TableCell>
+                      <TableCell>Poker App v2.1</TableCell>
+                      <TableCell>iOS 17.2</TableCell>
+                      <TableCell>Mar 1, 2024</TableCell>
+                      <TableCell>Mar 20, 2024</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span>65%</span>
+                          <div className="h-2 w-24 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-500" style={{ width: '65%' }} />
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Desktop</TableCell>
+                      <TableCell>Chrome 122</TableCell>
+                      <TableCell>Windows 11</TableCell>
+                      <TableCell>Mar 5, 2024</TableCell>
+                      <TableCell>Mar 19, 2024</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span>25%</span>
+                          <div className="h-2 w-24 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-purple-500" style={{ width: '25%' }} />
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Tablet</TableCell>
+                      <TableCell>Safari</TableCell>
+                      <TableCell>iPadOS 17.2</TableCell>
+                      <TableCell>Mar 10, 2024</TableCell>
+                      <TableCell>Mar 18, 2024</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span>10%</span>
+                          <div className="h-2 w-24 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-green-500" style={{ width: '10%' }} />
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Device Type Distribution</CardTitle>
+                    <CardDescription>
+                      Breakdown of usage by device type
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">Mobile</span>
+                          <span>65%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500" style={{ width: '65%' }} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">Desktop</span>
+                          <span>25%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-purple-500" style={{ width: '25%' }} />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="font-medium">Tablet</span>
+                          <span>10%</span>
+                        </div>
+                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-green-500" style={{ width: '10%' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Session Analysis</CardTitle>
+                    <CardDescription>
+                      Device usage patterns and session metrics
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-2">Average Session Duration by Device</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span>Mobile</span>
+                            <span className="font-medium">45 mins</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Desktop</span>
+                            <span className="font-medium">2.5 hours</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Tablet</span>
+                            <span className="font-medium">1.2 hours</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm text-muted-foreground mb-2">Peak Usage Times</div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span>Mobile</span>
+                            <span className="font-medium">8 PM - 11 PM</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Desktop</span>
+                            <span className="font-medium">2 PM - 6 PM</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span>Tablet</span>
+                            <span className="font-medium">7 PM - 9 PM</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

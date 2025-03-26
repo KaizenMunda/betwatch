@@ -14,6 +14,8 @@ import {
   UserCog,
   LayoutDashboard,
   Search,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -57,17 +59,6 @@ export function Sidebar({ className }: SidebarProps) {
           <h2 className="mb-2 px-4 text-lg font-semibold">Take Action</h2>
           <div className="space-y-1">
             <Link
-              to="/risky-users"
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
-                location.pathname === "/risky-users" &&
-                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
-              )}
-            >
-              <Users className="h-4 w-4" />
-              <span>High Risk Users</span>
-            </Link>
-            <Link
               to="/search"
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
@@ -77,6 +68,39 @@ export function Sidebar({ className }: SidebarProps) {
             >
               <Search className="h-4 w-4" />
               <span>User Search</span>
+            </Link>
+            <Link
+              to="/risky-users"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
+                location.pathname === "/risky-users" &&
+                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+              )}
+            >
+              <AlertTriangle className="h-4 w-4" />
+              <span>Risky Users</span>
+            </Link>
+            <Link
+              to="/risky-user-sessions"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
+                location.pathname === "/risky-user-sessions" &&
+                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+              )}
+            >
+              <Clock className="h-4 w-4" />
+              <span>Risky User Sessions</span>
+            </Link>
+            <Link
+              to="/whitelisted-users"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
+                location.pathname === "/whitelisted-users" &&
+                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+              )}
+            >
+              <CheckCircle className="h-4 w-4" />
+              <span>Whitelisted Users</span>
             </Link>
           </div>
         </div>
@@ -92,7 +116,7 @@ export function Sidebar({ className }: SidebarProps) {
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <Activity className="h-4 w-4" />
+              <Globe className="h-4 w-4" />
               <span>Game Theme</span>
             </Link>
             <Link
@@ -103,7 +127,7 @@ export function Sidebar({ className }: SidebarProps) {
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <Settings className="h-4 w-4" />
+              <Activity className="h-4 w-4" />
               <span>Product Interaction</span>
             </Link>
             <Link
@@ -138,6 +162,17 @@ export function Sidebar({ className }: SidebarProps) {
             >
               <Mouse className="h-4 w-4" />
               <span>Mouse Movement</span>
+            </Link>
+            <Link
+              to="/indicators/chip-dumping"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
+                location.pathname === "/indicators/chip-dumping" &&
+                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+              )}
+            >
+              <Activity className="h-4 w-4" />
+              <span>Chip Dumping</span>
             </Link>
           </div>
         </div>

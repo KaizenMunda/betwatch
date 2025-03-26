@@ -22,6 +22,12 @@ const Dashboard = () => {
             chartType="area"
             data={chartData}
             dataKeys={{ x: "name", y: "avgScore" }}
+            showBenchmarks={true}
+            benchmarks={{
+              newUsers: 45.6,
+              activeUsersAverage: 3.8,
+              activeUsers: 4.5
+            }}
           />
           
           <ChartCard 

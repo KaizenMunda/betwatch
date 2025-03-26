@@ -31,6 +31,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ stats }) => {
         iconBackground="bg-yellow-100 dark:bg-yellow-950/30"
         change={{ value: 8, timeframe: "vs last month" }}
         description="vs last month"
+        isNegativeChange={false}
       />
       <StatCard 
         title="Flagged Users" 
@@ -40,6 +41,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ stats }) => {
         iconBackground="bg-orange-100 dark:bg-orange-950/30"
         change={{ value: 8, timeframe: "vs last month" }}
         description="vs last month"
+        isNegativeChange={false}
       />
       <StatCard 
         title="Blocked Users" 
@@ -49,6 +51,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ stats }) => {
         iconBackground="bg-red-100 dark:bg-red-950/30"
         change={{ value: 5, timeframe: "vs last month" }}
         description="vs last month"
+        isNegativeChange={false}
       />
     </div>
   );
