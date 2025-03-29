@@ -3,56 +3,58 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, Calendar } from "lucide-react";
 import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
-// Mock data for game theme selections
-const mockThemeData = [
+// Mock data for screen sharing sessions
+const mockScreenShareData = [
   {
     date: new Date(Date.now() - 1 * 60 * 60 * 1000),
-    username: "john_doe",
-    userId: "12345",
-    deviceType: "Mobile",
-    botScore: 2.5,
-    selectedTheme: "classic"
+    username: "player123",
+    userId: "1",
+    softwareName: "TeamViewer"
   },
   {
     date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    username: "jane_smith",
-    userId: "12346",
-    deviceType: "Desktop",
-    botScore: 1.8,
-    selectedTheme: "minimal"
+    username: "gamer456",
+    userId: "1",
+    softwareName: "AnyDesk"
   },
   {
     date: new Date(Date.now() - 3 * 60 * 60 * 1000),
-    username: "mike_wilson",
-    userId: "12347",
-    deviceType: "Mobile",
-    botScore: 3.2,
-    selectedTheme: "4 color"
+    username: "user789",
+    userId: "1",
+    softwareName: "Chrome Remote Desktop"
   },
   {
     date: new Date(Date.now() - 4 * 60 * 60 * 1000),
-    username: "sarah_jones",
-    userId: "12348",
-    deviceType: "Desktop",
-    botScore: 4.5,
-    selectedTheme: "full colour"
+    username: "pro123",
+    userId: "1",
+    softwareName: "VNC Viewer"
   },
-  // Add more mock data as needed
 ];
 
-const GameTheme = () => {
+const ScreenShare = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const itemsPerPage = 10;
 
-  // Filter data based on search query
-  const filteredData = mockThemeData.filter(item => 
-    item.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.userId.includes(searchQuery)
-  );
+  // Filter data based on search query and selected date
+  const filteredData = mockScreenShareData.filter(item => {
+    const matchesSearch = item.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.userId.includes(searchQuery);
+    const matchesDate = item.date.toDateString() === selectedDate.toDateString();
+    return matchesSearch && matchesDate;
+  });
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -69,37 +71,67 @@ const GameTheme = () => {
     setCurrentPage(page);
   };
 
-  const getThemeColor = (theme: string) => {
-    switch (theme) {
-      case "classic":
-        return "text-blue-600";
-      case "minimal":
-        return "text-gray-600";
-      case "4 color":
-        return "text-purple-600";
-      case "full colour":
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Completed":
         return "text-green-600";
+      case "Interrupted":
+        return "text-yellow-600";
       default:
         return "text-gray-600";
     }
   };
 
+  const columns = [
+    {
+      header: "Date",
+      accessor: "date",
+      render: (value: Date) => format(value, 'MMM d, yyyy HH:mm')
+    },
+    {
+      header: "User",
+      accessor: "username",
+      className: "border-r-2 border-gray-200",
+      render: (value: string, user: any) => (
+        <div className="space-y-1">
+          <a 
+            href="/users/1"
+            className="text-blue-600 hover:underline block"
+          >
+            {value}
+          </a>
+          <a 
+            href="/users/1"
+            className="text-sm text-gray-500 hover:underline block"
+          >
+            ID: {user.userId}
+          </a>
+        </div>
+      )
+    },
+    {
+      header: "Software Name",
+      accessor: "softwareName",
+      render: (value: string) => value
+    }
+  ];
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Game Theme Analysis</h1>
+          <h1 className="text-3xl font-bold">Screen Share Analysis</h1>
           <p className="text-muted-foreground">
-            Track user theme selections and associated bot scores
+            Monitor screen sharing sessions and associated risk scores
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Theme Selection History</CardTitle>
+          <CardTitle>Screen Share History</CardTitle>
           <CardDescription>
-            View and analyze user theme preferences
+            View and analyze screen sharing sessions
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -114,6 +146,28 @@ const GameTheme = () => {
                   className="pl-9"
                 />
               </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[240px] justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <Button type="submit">Search</Button>
             </div>
           </form>
@@ -122,36 +176,19 @@ const GameTheme = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Username</TableHead>
-                  <TableHead>User ID</TableHead>
-                  <TableHead>Device Type</TableHead>
-                  <TableHead>Bot Score</TableHead>
-                  <TableHead>Selected Theme</TableHead>
+                  {columns.map((column, index) => (
+                    <TableHead key={index}>{column.header}</TableHead>
+                  ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedData.map((item, index) => (
                   <TableRow key={index}>
-                    <TableCell>{format(item.date, 'MMM d, yyyy HH:mm')}</TableCell>
-                    <TableCell>{item.username}</TableCell>
-                    <TableCell>{item.userId}</TableCell>
-                    <TableCell>
-                      <span className={item.deviceType === "Mobile" ? "text-blue-600" : "text-purple-600"}>
-                        {item.deviceType}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className={item.botScore >= 7.5 ? "text-red-500" : 
-                        item.botScore >= 5 ? "text-yellow-500" : "text-green-500"}>
-                        {item.botScore.toFixed(1)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className={getThemeColor(item.selectedTheme)}>
-                        {item.selectedTheme}
-                      </span>
-                    </TableCell>
+                    {columns.map((column, columnIndex) => (
+                      <TableCell key={columnIndex}>
+                        {column.render ? column.render(item[column.accessor], item) : item[column.accessor]}
+                      </TableCell>
+                    ))}
                   </TableRow>
                 ))}
               </TableBody>
@@ -206,4 +243,4 @@ const GameTheme = () => {
   );
 };
 
-export default GameTheme; 
+export default ScreenShare; 

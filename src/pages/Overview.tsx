@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 const Overview = () => {
   return (
@@ -88,6 +89,37 @@ const Overview = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Scoring Accuracy</CardTitle>
+              <CardDescription>Monitor false positivity and negativity rates in risk scoring</CardDescription>
+            </div>
+            <Link 
+              to="/scoring-accuracy"
+              className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              View Details →
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="p-4 border rounded-lg">
+              <div className="text-sm text-muted-foreground">False Positivity Rate (30d avg)</div>
+              <div className="text-2xl font-bold text-blue-600">15.2%</div>
+              <p className="text-sm text-muted-foreground">-2.1% from previous period</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <div className="text-sm text-muted-foreground">False Negativity Rate (30d avg)</div>
+              <div className="text-2xl font-bold text-red-600">8.7%</div>
+              <p className="text-sm text-muted-foreground">+0.5% from previous period</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

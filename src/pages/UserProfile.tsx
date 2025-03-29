@@ -5,14 +5,46 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Flag, Ban, Calendar, Search } from "lucide-react";
+import { Flag, Ban, Calendar as CalendarIcon, Search, Users } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import type { User } from "@/types/fraudModels";
 import { ResponsiveContainer, LineChart, XAxis, YAxis, Tooltip, Line, Legend } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { TablePagination } from "@/components/ui-custom/TablePagination";
+import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+interface UserProfile {
+  id: string;
+  username: string;
+  userId: string;
+  name: string;
+  partnerId: string;
+  registrationDate: Date;
+  firstGameplayDate: Date;
+  lastActive: Date;
+  profile: {
+    location: string;
+    status: string;
+    lastActive: Date;
+    totalTransactions: number;
+    accountBalance: number;
+  };
+  fraudScore: {
+    value: number;
+  };
+  riskMetrics: {
+    riskLevel: string;
+    kycStatus: string;
+  };
+  preferences: {
+    cardTheme: string;
+  };
+}
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -21,6 +53,29 @@ const UserProfile = () => {
   const itemsPerPage = 5;
   const [activeTab, setActiveTab] = useState("overview");
   const [handRange, setHandRange] = useState("1000");
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
+  });
+  const [selectedDevice, setSelectedDevice] = useState<{
+    type: string;
+    model: string;
+    systemName: string;
+    sharedUsers: Array<{
+      id: string;
+      username: string;
+      firstSeen: Date;
+      lastSeen: Date;
+      riskScore: number;
+      collusionRiskScore: number;
+    }>;
+  } | null>(null);
+  const [sessionPage, setSessionPage] = useState(1);
+  const sessionsPerPage = 3;
 
   // Mock transaction data
   const mockTransactions = [
@@ -69,60 +124,104 @@ const UserProfile = () => {
   ];
 
   // Mock user data
-  const mockUser: User = {
+  const mockUser: UserProfile = {
     id: "1",
+    username: "player123",
+    userId: "12345",
     name: "Rajesh Kumar",
-    email: "rajesh@example.com",
-    status: "active",
+    partnerId: "PART789",
+    registrationDate: new Date("2024-01-15T10:30:00"),
+    firstGameplayDate: new Date("2024-01-15T11:45:00"),
     lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    joinDate: new Date("2024-01-15"),
-    fraudScore: {
-      id: "fs1",
-      userId: "1",
-      value: 8.5,
-      subScores: [],
-      timestamp: new Date(),
-      threshold: 7.0,
-      lastUpdated: new Date()
-    },
     profile: {
-      joinDate: new Date("2024-01-15"),
       location: "Mumbai, IN",
-      phoneNumber: "+91 9876543210",
-      verificationStatus: "verified",
+      status: "active",
+      lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000),
       totalTransactions: 156,
-      totalTournaments: 36,
       accountBalance: 25000
     },
-    activities: [
-      {
-        type: "Login",
-        date: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        location: "Mumbai, IN",
-        status: "completed"
-      },
-      {
-        type: "Transaction",
-        date: new Date(Date.now() - 3 * 60 * 60 * 1000),
-        amount: 5000,
-        status: "completed"
-      },
-      {
-        type: "Risk Alert",
-        date: new Date(Date.now() - 5 * 60 * 60 * 1000),
-        status: "flagged"
-      }
-    ],
-    riskMetrics: {
-      loginAttempts: 5,
-      failedTransactions: 1,
-      suspiciousActivities: 2,
-      riskLevel: "medium",
-      lastAssessment: new Date()
+    fraudScore: {
+      value: 8.5
     },
-    transactionHistory: [],
-    actions: []
+    riskMetrics: {
+      riskLevel: "high",
+      kycStatus: "verified"
+    },
+    preferences: {
+      cardTheme: "minimal"
+    }
   };
+
+  // Mock shared users data
+  const mockSharedUsers = {
+    "Dell XPS 15": [
+      {
+        id: "2",
+        username: "priya456",
+        firstSeen: new Date("2024-03-15"),
+        lastSeen: new Date("2024-03-20"),
+        riskScore: 7.8,
+        collusionRiskScore: 8.5
+      },
+      {
+        id: "3",
+        username: "vikram789",
+        firstSeen: new Date("2024-03-16"),
+        lastSeen: new Date("2024-03-19"),
+        riskScore: 8.2,
+        collusionRiskScore: 7.9
+      }
+    ]
+  };
+
+  // Mock session data
+  const mockSessions = [
+    {
+      date: new Date(),
+      duration: "2h 15m",
+      gameType: "NLHE",
+      stakes: "₹500/₹1000",
+      handsPlayed: 245,
+      winLoss: 12500,
+      bb100: 5.2
+    },
+    {
+      date: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      duration: "3h 45m",
+      gameType: "PLO",
+      stakes: "₹200/₹400",
+      handsPlayed: 412,
+      winLoss: -8200,
+      bb100: -2.8
+    },
+    {
+      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      duration: "1h 30m",
+      gameType: "NLHE",
+      stakes: "₹500/₹1000",
+      handsPlayed: 168,
+      winLoss: 15800,
+      bb100: 7.5
+    },
+    {
+      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      duration: "4h 20m",
+      gameType: "NLHE",
+      stakes: "₹500/₹1000",
+      handsPlayed: 520,
+      winLoss: -5600,
+      bb100: -1.8
+    },
+    {
+      date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+      duration: "2h 45m",
+      gameType: "PLO",
+      stakes: "₹200/₹400",
+      handsPlayed: 310,
+      winLoss: 9200,
+      bb100: 4.2
+    }
+  ];
 
   const handleAction = (action: 'flag' | 'unflag' | 'block' | 'unblock') => {
     switch (action) {
@@ -171,6 +270,23 @@ const UserProfile = () => {
     return winRateData.filter(item => item.hands <= maxHands);
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  const handleViewSharedUsers = (device: { type: string; model: string; systemName: string }) => {
+    setSelectedDevice({
+      ...device,
+      sharedUsers: mockSharedUsers[device.model] || []
+    });
+  };
+
+  const handleSessionPageChange = (pageNumber) => {
+    setSessionPage(pageNumber);
+  };
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
@@ -189,9 +305,9 @@ const UserProfile = () => {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Review {mockUser.name}'s Account</AlertDialogTitle>
+                  <AlertDialogTitle>Review {mockUser.username}'s Account</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to mark {mockUser.name} for review? This will flag their account for detailed investigation.
+                    Are you sure you want to mark {mockUser.username} for review? This will flag their account for detailed investigation.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -213,9 +329,9 @@ const UserProfile = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Flag {mockUser.name}'s Account</AlertDialogTitle>
+                    <AlertDialogTitle>Flag {mockUser.username}'s Account</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to flag {mockUser.name}? This will mark their account for review.
+                      Are you sure you want to flag {mockUser.username}? This will mark their account for review.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -236,9 +352,9 @@ const UserProfile = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Remove Flag from {mockUser.name}'s Account</AlertDialogTitle>
+                    <AlertDialogTitle>Remove Flag from {mockUser.username}'s Account</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to remove the flag from {mockUser.name}'s account?
+                      Are you sure you want to remove the flag from {mockUser.username}'s account?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -261,9 +377,9 @@ const UserProfile = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Block {mockUser.name}'s Account</AlertDialogTitle>
+                    <AlertDialogTitle>Block {mockUser.username}'s Account</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to block {mockUser.name}? This will prevent them from accessing their account.
+                      Are you sure you want to block {mockUser.username}? This will prevent them from accessing their account.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -284,9 +400,9 @@ const UserProfile = () => {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Unblock {mockUser.name}'s Account</AlertDialogTitle>
+                    <AlertDialogTitle>Unblock {mockUser.username}'s Account</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to unblock {mockUser.name}? This will restore their account access.
+                      Are you sure you want to unblock {mockUser.username}? This will restore their account access.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -303,14 +419,13 @@ const UserProfile = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7 gap-4">
+        <TabsList className="grid w-full grid-cols-6 gap-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
+          <TabsTrigger value="gameplay">Gameplay Stats</TabsTrigger>
           <TabsTrigger value="winnability">Winnability</TabsTrigger>
           <TabsTrigger value="risk">Risk Analysis</TabsTrigger>
-          <TabsTrigger value="network">Network</TabsTrigger>
           <TabsTrigger value="device">Device</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -318,28 +433,51 @@ const UserProfile = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Basic Information</CardTitle>
+                <CardDescription>User details and account information</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="text-sm text-muted-foreground">Name</div>
                     <div className="font-medium">{mockUser.name}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Email</div>
-                    <div className="font-medium">{mockUser.email}</div>
+                    <div className="text-sm text-muted-foreground">Username</div>
+                    <div className="font-medium">{mockUser.username}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">User ID</div>
+                    <div className="font-medium">{mockUser.userId}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Partner ID</div>
+                    <div className="font-medium">{mockUser.partnerId}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Registration</div>
+                    <div className="font-medium">{format(mockUser.registrationDate, 'MMM d, yyyy HH:mm')}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">First Gameplay</div>
+                    <div className="font-medium">{format(mockUser.firstGameplayDate, 'MMM d, yyyy HH:mm')}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Time to First Gameplay</div>
+                    <div className="font-medium">
+                      {Math.round((mockUser.firstGameplayDate.getTime() - mockUser.registrationDate.getTime()) / (1000 * 60 * 60))} hours
+                    </div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">Location</div>
                     <div className="font-medium">{mockUser.profile.location}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Phone</div>
-                    <div className="font-medium">{mockUser.profile.phoneNumber}</div>
+                    <div className="text-sm text-muted-foreground">Account Status</div>
+                    <div className="font-medium">{mockUser.profile.status}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Joined Date</div>
-                    <div className="font-medium">{mockUser.joinDate.toLocaleDateString()}</div>
+                    <div className="text-sm text-muted-foreground">Last Active</div>
+                    <div className="font-medium">{format(mockUser.lastActive, 'MMM d, yyyy HH:mm')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -360,6 +498,10 @@ const UserProfile = () => {
                     <div className="font-medium">{mockUser.riskMetrics.riskLevel}</div>
                   </div>
                   <div>
+                    <div className="text-sm text-muted-foreground">KYC Status</div>
+                    <div className="font-medium text-green-500">{mockUser.riskMetrics.kycStatus}</div>
+                  </div>
+                  <div>
                     <div className="text-sm text-muted-foreground">Status</div>
                     <div className="font-medium">{currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}</div>
                   </div>
@@ -376,42 +518,83 @@ const UserProfile = () => {
             </Card>
           </div>
 
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>User Preferences</CardTitle>
-              <CardDescription>Personalized gaming preferences</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="text-sm text-muted-foreground">VIP Tag</div>
-                  <div className="font-medium">Gold</div>
+          <div className="grid gap-6 md:grid-cols-2 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Product Interaction</CardTitle>
+                <CardDescription>User's product preferences and interaction patterns</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Current Product Interaction Score</div>
+                    <div className={cn(
+                      "font-medium",
+                      8.2 >= 7 ? "text-red-500" :
+                      8.2 >= 5 ? "text-yellow-500" :
+                      "text-green-500"
+                    )}>
+                      8.2
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Device</div>
+                    <div className="font-medium">Mobile</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Card Theme</div>
+                    <div className="font-medium">{mockUser.preferences.cardTheme}</div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    asChild
+                  >
+                    <Link to="/indicators/product-interaction">
+                      Product Interaction Details
+                    </Link>
+                  </Button>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Cash / Tournament Preference</div>
-                  <div className="font-medium">Cash</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>User Preferences</CardTitle>
+                <CardDescription>Personalized gaming preferences</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-sm text-muted-foreground">VIP Tag</div>
+                    <div className="font-medium">Gold</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Cash / Tournament Preference</div>
+                    <div className="font-medium">Cash</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Primary Game Format</div>
+                    <div className="font-medium">No-Limit Hold'em</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Preferred Stake</div>
+                    <div className="font-medium">₹500/₹1000</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Primary Game Format</div>
-                  <div className="font-medium">No-Limit Hold'em</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Preferred Stake</div>
-                  <div className="font-medium">₹500/₹1000</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
-        <TabsContent value="activity">
+        <TabsContent value="activity" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Activity Summary</CardTitle>
               <CardDescription>Lifetime and monthly averages</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <div className="p-4 border rounded-lg">
                   <div className="text-sm text-muted-foreground">Lifetime Cash Hands Played</div>
                   <div className="text-2xl font-bold">1,200</div>
@@ -432,32 +615,364 @@ const UserProfile = () => {
             </CardContent>
           </Card>
 
-          <Card className="mt-6">
+          <Card>
             <CardHeader>
-              <CardTitle>Recent Activities</CardTitle>
-              <CardDescription>User's recent actions and events</CardDescription>
+              <CardTitle>Wallet Balance</CardTitle>
+              <CardDescription>Current account balance breakdown</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Unused Balance</div>
+                  <div className="text-2xl font-bold">₹{Math.round(15000).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Withdrawable</div>
+                  <div className="text-2xl font-bold">₹{Math.round(8000).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Rewards</div>
+                  <div className="text-2xl font-bold">₹{Math.round(2000).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">TDS this FY</div>
+                  <div className="text-2xl font-bold">₹{Math.round(500).toLocaleString()}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Transaction Summary</CardTitle>
+              <CardDescription>Monthly averages</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Deposits</div>
+                  <div className="text-2xl font-bold">₹{Math.round(mockTransactions.filter(t => t.type === 'Deposit').reduce((acc, t) => acc + t.amount, 0)).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Withdrawals</div>
+                  <div className="text-2xl font-bold">₹{Math.round(mockTransactions.filter(t => t.type === 'Withdrawal').reduce((acc, t) => acc + t.amount, 0)).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Rake</div>
+                  <div className="text-2xl font-bold">₹{Math.round(mockTransactions.filter(t => t.type === 'Buy-In').reduce((acc, t) => acc + t.amount * 0.05, 0)).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Lifetime Rewards</div>
+                  <div className="text-2xl font-bold">₹{Math.round(mockTransactions.filter(t => t.type === 'Rewards Conversion').reduce((acc, t) => acc + t.amount, 0)).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">First Time Deposit</div>
+                  <div className="text-2xl font-bold">₹{Math.round(50000).toLocaleString()}</div>
+                  <p className="text-sm text-muted-foreground">{format(new Date("2024-01-15"), 'MMM d, yyyy')}</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">First Time Withdrawal</div>
+                  <div className="text-2xl font-bold">₹{Math.round(35000).toLocaleString()}</div>
+                  <p className="text-sm text-muted-foreground">{format(new Date("2024-01-20"), 'MMM d, yyyy')}</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Average Deposit per Month</div>
+                  <div className="text-2xl font-bold">₹{Math.round(mockTransactions.filter(t => t.type === 'Deposit').reduce((acc, t) => acc + t.amount, 0) / 3).toLocaleString()}</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Average Withdrawal per Month</div>
+                  <div className="text-2xl font-bold">₹{Math.round(mockTransactions.filter(t => t.type === 'Withdrawal').reduce((acc, t) => acc + t.amount, 0) / 3).toLocaleString()}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Transaction History</CardTitle>
+                  <CardDescription>Recent financial activities</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-[300px] justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateRange.from ? (
+                          dateRange.to ? (
+                            <>
+                              {format(dateRange.from, "LLL dd, y")} -{" "}
+                              {format(dateRange.to, "LLL dd, y")}
+                            </>
+                          ) : (
+                            format(dateRange.from, "LLL dd, y")
+                          )
+                        ) : (
+                          <span>Pick a date range</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="range"
+                        defaultMonth={dateRange.from}
+                        selected={dateRange}
+                        onSelect={(range: any) => setDateRange(range)}
+                        numberOfMonths={2}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between mb-4">
+                <div>
+                  <label htmlFor="typeFilter" className="text-sm text-muted-foreground">Filter by Type:</label>
+                  <select id="typeFilter" className="ml-2 border rounded p-1">
+                    <option value="">All</option>
+                    <option value="Deposit">Deposit</option>
+                    <option value="Withdrawal">Withdrawal</option>
+                    <option value="Buy-In">Buy-In</option>
+                    <option value="Buy-Out">Buy-Out</option>
+                    <option value="Rewards Conversion">Rewards Conversion</option>
+                  </select>
+                </div>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedTransactions
+                    .filter(transaction => {
+                      if (!dateRange.from && !dateRange.to) return true;
+                      const transactionDate = transaction.date;
+                      if (dateRange.from && !dateRange.to) {
+                        return transactionDate >= dateRange.from;
+                      }
+                      if (!dateRange.from && dateRange.to) {
+                        return transactionDate <= dateRange.to;
+                      }
+                      if (dateRange.from && dateRange.to) {
+                        return transactionDate >= dateRange.from && transactionDate <= dateRange.to;
+                      }
+                      return true;
+                    })
+                    .map((transaction, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{format(transaction.date, 'MMM d, yyyy HH:mm')}</TableCell>
+                        <TableCell>{transaction.type}</TableCell>
+                        <TableCell>₹{transaction.amount.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            transaction.status === 'completed' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {transaction.status}
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                currentPage={currentPage}
+                totalItems={mockTransactions.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="gameplay" className="space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle>Gameplay Statistics</CardTitle>
+                <CardDescription>Overall gameplay performance and patterns</CardDescription>
+              </div>
+              <Select defaultValue="30">
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select time range" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">Last 7 days</SelectItem>
+                  <SelectItem value="30">Last 30 days</SelectItem>
+                  <SelectItem value="90">Last 90 days</SelectItem>
+                  <SelectItem value="lifetime">Lifetime</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Total Hands Played</div>
+                  <div className="text-2xl font-bold">12,450</div>
+                  <p className="text-sm text-muted-foreground">Lifetime</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Average Session Length</div>
+                  <div className="text-2xl font-bold">2.5 hrs</div>
+                  <p className="text-sm text-muted-foreground">Last 30 days</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Preferred Stakes</div>
+                  <div className="text-2xl font-bold">₹500/₹1000</div>
+                  <p className="text-sm text-muted-foreground">Most played</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Preferred Game Type</div>
+                  <div className="text-2xl font-bold">NLHE</div>
+                  <p className="text-sm text-muted-foreground">No-Limit Hold'em</p>
+                </div>
+              </div>
+
+              <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">VPIP</div>
+                  <div className="text-2xl font-bold">24.5%</div>
+                  <p className="text-sm text-muted-foreground">Voluntarily Put Money in Pot</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">PFR</div>
+                  <div className="text-2xl font-bold">18.2%</div>
+                  <p className="text-sm text-muted-foreground">Pre-Flop Raise</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">3-Bet</div>
+                  <div className="text-2xl font-bold">7.8%</div>
+                  <p className="text-sm text-muted-foreground">Three-bet percentage</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">C-Bet</div>
+                  <div className="text-2xl font-bold">68.5%</div>
+                  <p className="text-sm text-muted-foreground">Continuation bet frequency</p>
+                </div>
+              </div>
+
+              <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Showdown Win</div>
+                  <div className="text-2xl font-bold">52.3%</div>
+                  <p className="text-sm text-muted-foreground">Wins at showdown</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Non-Showdown Win</div>
+                  <div className="text-2xl font-bold">34.8%</div>
+                  <p className="text-sm text-muted-foreground">Wins without showdown</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Fold to 3-Bet</div>
+                  <div className="text-2xl font-bold">62.5%</div>
+                  <p className="text-sm text-muted-foreground">Folding to three-bets</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground">Went to Showdown</div>
+                  <div className="text-2xl font-bold">28.6%</div>
+                  <p className="text-sm text-muted-foreground">Hands that reached showdown</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Session History</CardTitle>
+                  <CardDescription>Recent gameplay sessions</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-[300px] justify-start text-left font-normal">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateRange.from ? (
+                          dateRange.to ? (
+                            <>
+                              {format(dateRange.from, "LLL dd, y")} -{" "}
+                              {format(dateRange.to, "LLL dd, y")}
+                            </>
+                          ) : (
+                            format(dateRange.from, "LLL dd, y")
+                          )
+                        ) : (
+                          <span>Pick a date range</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="range"
+                        defaultMonth={dateRange.from}
+                        selected={dateRange}
+                        onSelect={(range: any) => setDateRange(range)}
+                        numberOfMonths={2}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Game Type</TableHead>
+                    <TableHead>Stakes</TableHead>
+                    <TableHead>Hands Played</TableHead>
+                    <TableHead>Win/Loss</TableHead>
+                    <TableHead>BB/100</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockUser.activities.map((activity, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{activity.type}</TableCell>
-                      <TableCell>{activity.date.toLocaleDateString()}</TableCell>
-                      <TableCell>{activity.location || '-'}</TableCell>
-                      <TableCell>{activity.status}</TableCell>
-                    </TableRow>
-                  ))}
+                  {mockSessions
+                    .filter(session => {
+                      if (!dateRange.from && !dateRange.to) return true;
+                      if (dateRange.from && !dateRange.to) {
+                        return session.date >= dateRange.from;
+                      }
+                      if (!dateRange.from && dateRange.to) {
+                        return session.date <= dateRange.to;
+                      }
+                      if (dateRange.from && dateRange.to) {
+                        return session.date >= dateRange.from && session.date <= dateRange.to;
+                      }
+                      return true;
+                    })
+                    .slice((sessionPage - 1) * sessionsPerPage, sessionPage * sessionsPerPage)
+                    .map((session, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{format(session.date, 'MMM d, yyyy')}</TableCell>
+                        <TableCell>{session.duration}</TableCell>
+                        <TableCell>{session.gameType}</TableCell>
+                        <TableCell>{session.stakes}</TableCell>
+                        <TableCell>{session.handsPlayed}</TableCell>
+                        <TableCell className={session.winLoss >= 0 ? "text-green-500" : "text-red-500"}>
+                          {session.winLoss >= 0 ? '+' : ''}{session.winLoss.toLocaleString()}
+                        </TableCell>
+                        <TableCell>{session.bb100}</TableCell>
+                      </TableRow>
+                    ))}
                 </TableBody>
               </Table>
+              <TablePagination
+                currentPage={sessionPage}
+                totalItems={mockSessions.length}
+                itemsPerPage={sessionsPerPage}
+                onPageChange={handleSessionPageChange}
+              />
             </CardContent>
           </Card>
         </TabsContent>
@@ -589,25 +1104,24 @@ const UserProfile = () => {
                 <CardTitle className="text-2xl font-bold">Risk Analysis</CardTitle>
                 <CardDescription>Detailed breakdown of risk categories</CardDescription>
               </div>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {format(new Date(), 'MMM d, yyyy')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="end">
-                  <CalendarComponent
-                    mode="range"
-                    defaultMonth={new Date()}
-                    numberOfMonths={2}
-                    selected={{
-                      from: new Date(),
-                      to: new Date()
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-[180px] justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {format(selectedDate, 'MMM d, yyyy')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => date && setSelectedDate(date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="bot" className="space-y-4">
@@ -622,46 +1136,44 @@ const UserProfile = () => {
 
                 {['bot', 'dumping', 'collusion', 'ghosting', 'splash', 'rta'].map((type) => (
                   <TabsContent key={type} value={type}>
-                    <div className="space-y-4">
-                      <div className="p-6 border rounded-lg space-y-6">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="text-2xl font-bold capitalize mb-2">{type} Score</h3>
-                            <div className="space-y-1">
-                              <p className="text-sm text-muted-foreground">
-                                Last login: {format(new Date(Date.now() - 2 * 60 * 60 * 1000), 'MMM d, yyyy HH:mm')}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Last hand played: {format(new Date(Date.now() - 5 * 60 * 60 * 1000), 'MMM d, yyyy HH:mm')}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-3xl font-bold text-red-500">7.5</div>
+                    <div className="space-y-6">
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="p-4 border rounded-lg space-y-2">
+                          <div className="text-sm text-muted-foreground">Day's Score</div>
+                          <div className="text-3xl font-bold text-red-500">8.5</div>
+                          <p className="text-sm text-muted-foreground">Last updated 2 hours ago</p>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-3">
-                          <div className="p-4 border rounded-lg">
-                            <div className="text-sm text-muted-foreground">Active Days</div>
-                            <div className="text-2xl font-bold">24/30</div>
-                            <Progress value={80} className="mt-2" />
-                          </div>
-                          <div className="p-4 border rounded-lg">
-                            <div className="text-sm text-muted-foreground">High Score Days</div>
-                            <div className="text-2xl font-bold">15/30</div>
-                            <Progress value={50} className="mt-2" />
-                          </div>
-                          <div className="p-4 border rounded-lg">
-                            <div className="text-sm text-muted-foreground">Average Score</div>
-                            <div className="text-2xl font-bold">6.8</div>
-                            <Progress value={68} className="mt-2" />
-                          </div>
+                        <div className="p-4 border rounded-lg space-y-2">
+                          <div className="text-sm text-muted-foreground">Active Days</div>
+                          <div className="text-3xl font-bold text-blue-500">21/28</div>
+                          <p className="text-sm text-muted-foreground">Days with activity in last 28 days</p>
+                        </div>
+
+                        <div className="p-4 border rounded-lg space-y-2">
+                          <div className="text-sm text-muted-foreground">High Score Days</div>
+                          <div className="text-3xl font-bold text-yellow-500">8/28</div>
+                          <p className="text-sm text-muted-foreground">Days with score ≥ 7.5 in last 28 days</p>
                         </div>
                       </div>
+
+                      {type === 'dumping' && (
+                        <div className="flex justify-end">
+                          <Button
+                            variant="outline"
+                            className="flex items-center gap-2"
+                            onClick={() => window.location.href = `/indicators/chip-dumping?userId=${userId}`}
+                          >
+                            <Search className="h-4 w-4" />
+                            View Sessions
+                          </Button>
+                        </div>
+                      )}
 
                       <Card>
                         <CardHeader>
                           <CardTitle>{type.charAt(0).toUpperCase() + type.slice(1)} Score Heatmap</CardTitle>
-                          <CardDescription>Daily risk scores for the last 4 weeks</CardDescription>
+                          <CardDescription>Daily Risk Scores for the previous 4 weeks from {format(selectedDate, 'MMM d, yyyy')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="relative pl-20">
@@ -744,186 +1256,6 @@ const UserProfile = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="network" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Network Analysis</CardTitle>
-              <CardDescription>
-                User's network activity and connection patterns
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">IP Addresses</div>
-                  <div className="text-3xl font-bold">4</div>
-                  <p className="text-sm text-muted-foreground">Unique IPs in last 30 days</p>
-                </div>
-
-                <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">Locations</div>
-                  <div className="text-3xl font-bold">2</div>
-                  <p className="text-sm text-muted-foreground">Different locations detected</p>
-                </div>
-
-                <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">VPN Usage</div>
-                  <div className="text-3xl font-bold text-yellow-500">12%</div>
-                  <p className="text-sm text-muted-foreground">Of total connections</p>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>IP Address</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>First Seen</TableHead>
-                      <TableHead>Last Seen</TableHead>
-                      <TableHead>Connection Type</TableHead>
-                      <TableHead>Risk Level</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>192.168.1.100</TableCell>
-                      <TableCell>New York, US</TableCell>
-                      <TableCell>Mar 15, 2024</TableCell>
-                      <TableCell>Mar 20, 2024</TableCell>
-                      <TableCell>Residential</TableCell>
-                      <TableCell>
-                        <span className="text-green-500">Low</span>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>10.0.0.123</TableCell>
-                      <TableCell>London, UK</TableCell>
-                      <TableCell>Mar 16, 2024</TableCell>
-                      <TableCell>Mar 16, 2024</TableCell>
-                      <TableCell>VPN</TableCell>
-                      <TableCell>
-                        <span className="text-yellow-500">Medium</span>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>172.16.0.234</TableCell>
-                      <TableCell>New York, US</TableCell>
-                      <TableCell>Mar 17, 2024</TableCell>
-                      <TableCell>Mar 19, 2024</TableCell>
-                      <TableCell>Mobile</TableCell>
-                      <TableCell>
-                        <span className="text-green-500">Low</span>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>192.168.2.150</TableCell>
-                      <TableCell>Toronto, CA</TableCell>
-                      <TableCell>Mar 18, 2024</TableCell>
-                      <TableCell>Mar 18, 2024</TableCell>
-                      <TableCell>Data Center</TableCell>
-                      <TableCell>
-                        <span className="text-red-500">High</span>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </div>
-
-              <div className="mt-6 grid gap-6 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Connection Types Distribution</CardTitle>
-                    <CardDescription>
-                      Breakdown of different connection types used
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Residential</span>
-                          <span>45%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-green-500" style={{ width: '45%' }} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Mobile</span>
-                          <span>30%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500" style={{ width: '30%' }} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">VPN</span>
-                          <span>12%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-yellow-500" style={{ width: '12%' }} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Data Center</span>
-                          <span>13%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-red-500" style={{ width: '13%' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Location History</CardTitle>
-                    <CardDescription>
-                      Geographic distribution of connections
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">New York, US</span>
-                          <span>65%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: '65%' }} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">London, UK</span>
-                          <span>20%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: '20%' }} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Toronto, CA</span>
-                          <span>15%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-primary" style={{ width: '15%' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="device" className="space-y-6">
           <Card>
             <CardHeader>
@@ -958,20 +1290,30 @@ const UserProfile = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Device Type</TableHead>
-                      <TableHead>Browser/App</TableHead>
+                      <TableHead>Model</TableHead>
+                      <TableHead>System Name</TableHead>
+                      <TableHead>Memory (GB)</TableHead>
                       <TableHead>Operating System</TableHead>
-                      <TableHead>First Used</TableHead>
-                      <TableHead>Last Used</TableHead>
+                      <TableHead>First Login</TableHead>
+                      <TableHead>Last Login</TableHead>
+                      <TableHead>Shared By</TableHead>
                       <TableHead>Usage %</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     <TableRow>
                       <TableCell>Mobile</TableCell>
-                      <TableCell>Poker App v2.1</TableCell>
+                      <TableCell>iPhone 15 Pro</TableCell>
+                      <TableCell>Rajesh's iPhone</TableCell>
+                      <TableCell>8</TableCell>
                       <TableCell>iOS 17.2</TableCell>
                       <TableCell>Mar 1, 2024</TableCell>
                       <TableCell>Mar 20, 2024</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">0</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span>65%</span>
@@ -983,10 +1325,90 @@ const UserProfile = () => {
                     </TableRow>
                     <TableRow>
                       <TableCell>Desktop</TableCell>
-                      <TableCell>Chrome 122</TableCell>
+                      <TableCell>Dell XPS 15</TableCell>
+                      <TableCell>Rajesh-PC</TableCell>
+                      <TableCell>16</TableCell>
                       <TableCell>Windows 11</TableCell>
                       <TableCell>Mar 5, 2024</TableCell>
                       <TableCell>Mar 19, 2024</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="text-red-500">2</span>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-2"
+                                onClick={() => handleViewSharedUsers({
+                                  type: "Desktop",
+                                  model: "Dell XPS 15",
+                                  systemName: "Rajesh-PC"
+                                })}
+                              >
+                                View
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>Shared Users - {selectedDevice?.model}</DialogTitle>
+                                <DialogDescription>
+                                  Users who have accessed this device in the last 30 days
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="mt-4">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead>User ID</TableHead>
+                                      <TableHead>Username</TableHead>
+                                      <TableHead>First Seen</TableHead>
+                                      <TableHead>Last Seen</TableHead>
+                                      <TableHead>Ghosting Risk Score</TableHead>
+                                      <TableHead>Collusion Risk Score</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {selectedDevice?.sharedUsers.map((user) => (
+                                      <TableRow key={user.id}>
+                                        <TableCell>{user.id}</TableCell>
+                                        <TableCell>
+                                          <a 
+                                            href={`/users/${user.id}`} 
+                                            className="text-blue-600 hover:underline cursor-pointer"
+                                          >
+                                            {user.username}
+                                          </a>
+                                        </TableCell>
+                                        <TableCell>{format(user.firstSeen, 'MMM d, yyyy')}</TableCell>
+                                        <TableCell>{format(user.lastSeen, 'MMM d, yyyy')}</TableCell>
+                                        <TableCell>
+                                          <span className={
+                                            user.riskScore >= 7.5 ? 'text-red-500' :
+                                            user.riskScore >= 5 ? 'text-yellow-500' :
+                                            'text-green-500'
+                                          }>
+                                            {user.riskScore.toFixed(1)}
+                                          </span>
+                                        </TableCell>
+                                        <TableCell>
+                                          <span className={
+                                            user.collusionRiskScore >= 7.5 ? 'text-red-500' :
+                                            user.collusionRiskScore >= 5 ? 'text-yellow-500' :
+                                            'text-green-500'
+                                          }>
+                                            {user.collusionRiskScore.toFixed(1)}
+                                          </span>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span>25%</span>
@@ -998,10 +1420,17 @@ const UserProfile = () => {
                     </TableRow>
                     <TableRow>
                       <TableCell>Tablet</TableCell>
-                      <TableCell>Safari</TableCell>
+                      <TableCell>iPad Pro 12.9</TableCell>
+                      <TableCell>Rajesh's iPad</TableCell>
+                      <TableCell>8</TableCell>
                       <TableCell>iPadOS 17.2</TableCell>
                       <TableCell>Mar 10, 2024</TableCell>
                       <TableCell>Mar 18, 2024</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">0</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span>10%</span>
@@ -1013,220 +1442,6 @@ const UserProfile = () => {
                     </TableRow>
                   </TableBody>
                 </Table>
-              </div>
-
-              <div className="mt-6 grid gap-6 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Device Type Distribution</CardTitle>
-                    <CardDescription>
-                      Breakdown of usage by device type
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Mobile</span>
-                          <span>65%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500" style={{ width: '65%' }} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Desktop</span>
-                          <span>25%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-purple-500" style={{ width: '25%' }} />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="font-medium">Tablet</span>
-                          <span>10%</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                          <div className="h-full bg-green-500" style={{ width: '10%' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Session Analysis</CardTitle>
-                    <CardDescription>
-                      Device usage patterns and session metrics
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-2">Average Session Duration by Device</div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span>Mobile</span>
-                            <span className="font-medium">45 mins</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span>Desktop</span>
-                            <span className="font-medium">2.5 hours</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span>Tablet</span>
-                            <span className="font-medium">1.2 hours</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="text-sm text-muted-foreground mb-2">Peak Usage Times</div>
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span>Mobile</span>
-                            <span className="font-medium">8 PM - 11 PM</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span>Desktop</span>
-                            <span className="font-medium">2 PM - 6 PM</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span>Tablet</span>
-                            <span className="font-medium">7 PM - 9 PM</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="transactions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Transaction Summary</CardTitle>
-              <CardDescription>Monthly averages</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Current Balance</div>
-                  <div className="text-2xl font-bold">₹{mockUser.profile.accountBalance.toLocaleString()}</div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Lifetime Deposits</div>
-                  <div className="text-2xl font-bold">₹{mockTransactions.filter(t => t.type === 'Deposit').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}</div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Lifetime Withdrawals</div>
-                  <div className="text-2xl font-bold">₹{mockTransactions.filter(t => t.type === 'Withdrawal').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}</div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Lifetime Rake</div>
-                  <div className="text-2xl font-bold">₹{mockTransactions.filter(t => t.type === 'Buy-In').reduce((acc, t) => acc + t.amount * 0.05, 0).toLocaleString()}</div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Lifetime Rewards</div>
-                  <div className="text-2xl font-bold">₹{mockTransactions.filter(t => t.type === 'Rewards Conversion').reduce((acc, t) => acc + t.amount, 0).toLocaleString()}</div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Average Deposit per Month</div>
-                  <div className="text-2xl font-bold">₹{(mockTransactions.filter(t => t.type === 'Deposit').reduce((acc, t) => acc + t.amount, 0) / 3).toLocaleString()}</div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Average Withdrawal per Month</div>
-                  <div className="text-2xl font-bold">₹{(mockTransactions.filter(t => t.type === 'Withdrawal').reduce((acc, t) => acc + t.amount, 0) / 3).toLocaleString()}</div>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Average Rake per Month</div>
-                  <div className="text-2xl font-bold">₹{(mockTransactions.filter(t => t.type === 'Buy-In').reduce((acc, t) => acc + t.amount * 0.05, 0) / 3).toLocaleString()}</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Transaction History</CardTitle>
-              <CardDescription>Recent financial activities</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex justify-between mb-4">
-                <div>
-                  <label htmlFor="typeFilter" className="text-sm text-muted-foreground">Filter by Type:</label>
-                  <select id="typeFilter" className="ml-2 border rounded p-1">
-                    <option value="">All</option>
-                    <option value="Deposit">Deposit</option>
-                    <option value="Withdrawal">Withdrawal</option>
-                    <option value="Buy-In">Buy-In</option>
-                    <option value="Buy-Out">Buy-Out</option>
-                    <option value="Rewards Conversion">Rewards Conversion</option>
-                  </select>
-                </div>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedTransactions.map((transaction, index) => (
-                    <TableRow key={index}>
-                      <TableCell>
-                        {format(transaction.date, 'MMM d, yyyy HH:mm')}
-                      </TableCell>
-                      <TableCell>
-                        <span className={
-                          transaction.type === 'Deposit' ? 'text-green-600' :
-                          transaction.type === 'Withdrawal' ? 'text-red-600' :
-                          transaction.type === 'Buy-In' ? 'text-blue-600' :
-                          transaction.type === 'Buy-Out' ? 'text-purple-600' :
-                          'text-orange-600'
-                        }>
-                          {transaction.type}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className={transaction.type === 'Withdrawal' ? 'text-red-600' : 'text-green-600'}>
-                          ₹{transaction.amount.toLocaleString()}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className={
-                          transaction.status === 'completed' ? 'text-green-600' :
-                          transaction.status === 'pending' ? 'text-yellow-600' :
-                          'text-red-600'
-                        }>
-                          {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="flex justify-center mt-4">
-                {Array.from({ length: Math.ceil(mockTransactions.length / itemsPerPage) }, (_, i) => (
-                  <Button
-                    key={i + 1}
-                    variant={currentPage === i + 1 ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handlePageChange(i + 1)}
-                    className={currentPage === i + 1 ? "" : "hover:bg-secondary"}
-                  >
-                    {i + 1}
-                  </Button>
-                ))}
               </div>
             </CardContent>
           </Card>

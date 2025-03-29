@@ -6,10 +6,10 @@ import Dashboard from "@/pages/Dashboard";
 import RiskScores from "@/pages/RiskScores";
 import RiskyUsers from "@/pages/RiskyUsers";
 import WhitelistedUsers from "@/pages/WhitelistedUsers";
-import GameTheme from "@/pages/indicators/GameTheme";
+import CardTheme from "@/pages/indicators/CardTheme";
 import ProductInteraction from "@/pages/indicators/ProductInteraction";
-import SystemDetails from "@/pages/indicators/SystemDetails";
-import RemoteAccess from "@/pages/indicators/RemoteAccess";
+import ScreenShare from "@/pages/indicators/ScreenShare";
+import SystemProcesses from "@/pages/indicators/SystemProcesses";
 import MouseMovement from "@/pages/indicators/MouseMovement";
 import ChipDumping from "@/pages/indicators/ChipDumping";
 import RiskThresholds from "@/pages/RiskThresholds";
@@ -22,6 +22,7 @@ import Overview from "@/pages/Overview";
 import UserActionHistory from "@/pages/UserActionHistory";
 import RiskThresholdHistory from "@/pages/RiskThresholdHistory";
 import RiskyUserSessions from "@/pages/RiskyUserSessions";
+import ScoringAccuracy from "@/pages/ScoringAccuracy";
 
 function App() {
   return (
@@ -34,10 +35,11 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/risk-scores" element={<RiskScores />} />
-              <Route path="/indicators/game-theme" element={<GameTheme />} />
+              <Route path="/scoring-accuracy" element={<ScoringAccuracy />} />
+              <Route path="/indicators/card-theme" element={<CardTheme />} />
               <Route path="/indicators/product-interaction" element={<ProductInteraction />} />
-              <Route path="/indicators/system-details" element={<SystemDetails />} />
-              <Route path="/indicators/remote-access" element={<RemoteAccess />} />
+              <Route path="/indicators/screen-share" element={<ScreenShare />} />
+              <Route path="/indicators/system-processes" element={<SystemProcesses />} />
               <Route path="/indicators/mouse-movement" element={<MouseMovement />} />
               <Route path="/indicators/chip-dumping" element={<ChipDumping />} />
               <Route path="/risk-thresholds" element={<RiskThresholds />} />

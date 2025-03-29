@@ -16,6 +16,15 @@ import {
   Search,
   CheckCircle,
   Clock,
+  Gamepad2,
+  ShoppingCart,
+  Coins,
+  Handshake,
+  UserX,
+  History,
+  MonitorPlay,
+  Cpu,
+  Target,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -52,6 +61,17 @@ export function Sidebar({ className }: SidebarProps) {
               <AlertTriangle className="h-4 w-4" />
               <span>Risk Scores</span>
             </Link>
+            <Link
+              to="/scoring-accuracy"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
+                location.pathname === "/scoring-accuracy" &&
+                  "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
+              )}
+            >
+              <Target className="h-4 w-4" />
+              <span>Scoring Accuracy</span>
+            </Link>
           </div>
         </div>
 
@@ -77,7 +97,7 @@ export function Sidebar({ className }: SidebarProps) {
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <AlertTriangle className="h-4 w-4" />
+              <UserX className="h-4 w-4" />
               <span>Risky Users</span>
             </Link>
             <Link
@@ -88,7 +108,7 @@ export function Sidebar({ className }: SidebarProps) {
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <Clock className="h-4 w-4" />
+              <History className="h-4 w-4" />
               <span>Risky User Sessions</span>
             </Link>
             <Link
@@ -109,15 +129,15 @@ export function Sidebar({ className }: SidebarProps) {
           <h2 className="mb-2 px-4 text-lg font-semibold">Indicators</h2>
           <div className="space-y-1">
             <Link
-              to="/indicators/game-theme"
+              to="/indicators/card-theme"
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
-                location.pathname === "/indicators/game-theme" &&
+                location.pathname === "/indicators/card-theme" &&
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <Globe className="h-4 w-4" />
-              <span>Game Theme</span>
+              <Gamepad2 className="h-4 w-4" />
+              <span>Card Theme</span>
             </Link>
             <Link
               to="/indicators/product-interaction"
@@ -127,30 +147,30 @@ export function Sidebar({ className }: SidebarProps) {
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <Activity className="h-4 w-4" />
+              <Handshake className="h-4 w-4" />
               <span>Product Interaction</span>
             </Link>
             <Link
-              to="/indicators/system-details"
+              to="/indicators/screen-share"
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
-                location.pathname === "/indicators/system-details" &&
+                location.pathname === "/indicators/screen-share" &&
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <Monitor className="h-4 w-4" />
-              <span>System Details</span>
+              <MonitorPlay className="h-4 w-4" />
+              <span>Screen Share</span>
             </Link>
             <Link
-              to="/indicators/remote-access"
+              to="/indicators/system-processes"
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
-                location.pathname === "/indicators/remote-access" &&
+                location.pathname === "/indicators/system-processes" &&
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <Globe className="h-4 w-4" />
-              <span>Remote Access</span>
+              <Cpu className="h-4 w-4" />
+              <span>System Processes</span>
             </Link>
             <Link
               to="/indicators/mouse-movement"
@@ -171,7 +191,7 @@ export function Sidebar({ className }: SidebarProps) {
                   "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
               )}
             >
-              <Activity className="h-4 w-4" />
+              <Coins className="h-4 w-4" />
               <span>Chip Dumping</span>
             </Link>
           </div>

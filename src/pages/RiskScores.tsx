@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
@@ -6,10 +6,138 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from "react-router-dom";
-import { History } from "lucide-react";
+import { History, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, subDays } from "date-fns";
+import { TablePagination } from "@/components/ui-custom/TablePagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ConfirmationDialog from "@/components/ui-custom/ConfirmationDialog";
+import WhitelistDialog from "@/components/ui-custom/WhitelistDialog";
+
+interface ConfirmationState {
+  isOpen: boolean;
+  userId: string | null;
+  userName: string | null;
+  action: "block" | "flag" | null;
+}
+
+interface WhitelistState {
+  isOpen: boolean;
+  userId: string | null;
+  userName: string | null;
+}
+
+const timeRanges = [
+  { value: "week", label: "Current Week" },
+  { value: "month", label: "Current Month" },
+  { value: "quarter", label: "Current Quarter" },
+  { value: "custom", label: "Custom Range" },
+];
 
 const RiskScores = () => {
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [timeRange, setTimeRange] = useState("month");
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  });
+  const [confirmation, setConfirmation] = useState<ConfirmationState>({
+    isOpen: false,
+    userId: null,
+    userName: null,
+    action: null,
+  });
+  const [whitelistDialog, setWhitelistDialog] = useState<WhitelistState>({
+    isOpen: false,
+    userId: null,
+    userName: null,
+  });
+  const itemsPerPage = 5;
+
+  const handleDateSelect = (range: { from: Date | undefined; to: Date | undefined }) => {
+    if (range.from && range.to) {
+      const daysDiff = Math.ceil((range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysDiff >= 7 && daysDiff <= 90) {
+        setDateRange(range);
+      }
+    }
+  };
+
+  const handleTimeRangeChange = (value: string) => {
+    setTimeRange(value);
+    if (value !== "custom") {
+      setDateRange({ from: undefined, to: undefined });
+    }
+  };
+
+  const handleAction = (action: "block" | "flag", userId: string, userName: string) => {
+    setConfirmation({
+      isOpen: true,
+      userId,
+      userName,
+      action,
+    });
+  };
+
+  const executeAction = () => {
+    if (!confirmation.action || !confirmation.userId) return;
+
+    // In a real application, this would make an API call
+    console.log(`${confirmation.action} user:`, confirmation.userId);
+    
+    setConfirmation({
+      isOpen: false,
+      userId: null,
+      userName: null,
+      action: null,
+    });
+  };
+
+  const closeConfirmation = () => {
+    setConfirmation({
+      isOpen: false,
+      userId: null,
+      userName: null,
+      action: null,
+    });
+  };
+
+  const handleClear = (userId: string, userName: string) => {
+    setWhitelistDialog({
+      isOpen: true,
+      userId,
+      userName,
+    });
+  };
+
+  const handleWhitelistConfirm = (whitelist: boolean, notes: string) => {
+    if (!whitelistDialog.userId) return;
+
+    // In a real application, this would make an API call
+    console.log(`Clear user:`, whitelistDialog.userId, {
+      whitelist,
+      notes,
+    });
+    
+    setWhitelistDialog({
+      isOpen: false,
+      userId: null,
+      userName: null,
+    });
+  };
+
+  const closeWhitelistDialog = () => {
+    setWhitelistDialog({
+      isOpen: false,
+      userId: null,
+      userName: null,
+    });
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 7.5) return "text-red-500";
@@ -207,9 +335,59 @@ const RiskScores = () => {
       <Card>
         <CardHeader>
           <CardTitle>Risk Analysis</CardTitle>
-          <CardDescription>Category-wise risk analysis and high-risk users for last 30 days</CardDescription>
+          <CardDescription>Category-wise risk analysis and high-risk users</CardDescription>
         </CardHeader>
         <CardContent>
+          <div className="flex justify-end mb-4">
+            {timeRange === "custom" ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-[240px] justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateRange.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")} -{" "}
+                          {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Pick a date range (7-90 days)</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange.from}
+                    selected={dateRange}
+                    onSelect={handleDateSelect}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+            ) : (
+              <Select value={timeRange} onValueChange={handleTimeRangeChange}>
+                <SelectTrigger className="w-[160px]">
+                  <SelectValue placeholder="Select time range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeRanges.map((range) => (
+                    <SelectItem key={range.value} value={range.value}>
+                      {range.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
           <Tabs defaultValue="Bot Detection">
             <TabsList className="grid grid-cols-3 lg:grid-cols-6 gap-4">
               {riskCategories.map((category) => (
@@ -268,7 +446,9 @@ const RiskScores = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {category.highRiskUsers.map((user) => (
+                        {category.highRiskUsers
+                          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                          .map((user) => (
                           <TableRow key={user.id}>
                             <TableCell className="font-medium">{user.id}</TableCell>
                             <TableCell>{user.username}</TableCell>
@@ -291,28 +471,24 @@ const RiskScores = () => {
                                 <Button 
                                   variant="outline" 
                                   size="sm"
-                                  className="text-green-600 hover:text-green-700"
+                                  className="bg-green-50 hover:bg-green-100 text-green-600"
+                                  onClick={() => handleClear(user.id, user.username)}
                                 >
                                   Clear
                                 </Button>
                                 <Button 
                                   variant="outline" 
                                   size="sm"
-                                  className="text-blue-600 hover:text-blue-700"
-                                >
-                                  Review
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  className="text-yellow-600 hover:text-yellow-700"
+                                  className="bg-orange-50 hover:bg-orange-100 text-orange-600"
+                                  onClick={() => handleAction("flag", user.id, user.username)}
                                 >
                                   Flag
                                 </Button>
                                 <Button 
                                   variant="outline" 
                                   size="sm"
-                                  className="text-red-600 hover:text-red-700"
+                                  className="bg-red-50 hover:bg-red-100 text-red-600"
+                                  onClick={() => handleAction("block", user.id, user.username)}
                                 >
                                   Block
                                 </Button>
@@ -322,6 +498,14 @@ const RiskScores = () => {
                         ))}
                       </TableBody>
                     </Table>
+                    <div className="mt-4">
+                      <TablePagination
+                        currentPage={currentPage}
+                        totalItems={category.highRiskUsers.length}
+                        itemsPerPage={itemsPerPage}
+                        onPageChange={setCurrentPage}
+                      />
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -329,6 +513,33 @@ const RiskScores = () => {
           </Tabs>
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmation.isOpen}
+        onClose={closeConfirmation}
+        onConfirm={executeAction}
+        title={
+          confirmation.action === "block"
+            ? "Block User"
+            : "Flag User"
+        }
+        description={
+          confirmation.action === "block"
+            ? `Are you sure you want to block ${confirmation.userName}? This will prevent them from accessing the platform.`
+            : `Are you sure you want to flag ${confirmation.userName} for suspicious activity?`
+        }
+        actionLabel={confirmation.action === "block" ? "Block" : "Flag"}
+        variant="destructive"
+      />
+
+      {/* Whitelist Dialog */}
+      <WhitelistDialog
+        isOpen={whitelistDialog.isOpen}
+        onClose={closeWhitelistDialog}
+        onConfirm={handleWhitelistConfirm}
+        userName={whitelistDialog.userName || ""}
+      />
     </div>
   );
 };

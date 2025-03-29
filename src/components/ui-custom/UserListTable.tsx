@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -16,30 +16,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Badge } from "@/components/ui/badge";
+import { TablePagination } from "@/components/ui-custom/TablePagination";
 
-interface User {
+export interface User {
   id: string;
   username: string;
-  lastActive: string;
-  riskScore: number;
+  sessionId: string;
+  tableType: string;
+  handsPlayed: number;
+  bbsDumped: number;
+  winRate: number;
+  beneficiaryUser: string;
+  beneficiaryId: string;
+  numPlayers: number;
+  avgClosingAction: number;
+  bonusConversion: number;
+  chipDumpingScore: number;
+  status: "active" | "flagged" | "review";
   location: string;
-  status: string;
-  [key: string]: any; // For additional columns
+  date: string;
 }
 
-interface Column {
+export interface Column {
   header: string;
-  accessor: string;
-  render?: (value: any) => React.ReactNode;
+  accessor: keyof User;
+  className?: string;
+  headerClassName?: string;
+  render?: (value: any, user: User) => React.ReactNode;
 }
 
 interface UserListTableProps {
@@ -47,12 +51,24 @@ interface UserListTableProps {
   columns: Column[];
   title?: string;
   description?: string;
+  onAction: (action: "block" | "flag" | "review", userId: string, userName: string) => void;
+  isExpanded?: boolean;
 }
 
-const UserListTable = ({ users, columns, title, description }: UserListTableProps) => {
-  const handleAction = (userId: string, action: string) => {
-    console.log(`${action} user:`, userId);
-  };
+const UserListTable: React.FC<UserListTableProps> = ({
+  users,
+  columns,
+  title,
+  description,
+  onAction,
+  isExpanded = true,
+}) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = users.slice(startIndex, endIndex);
 
   const getScoreColor = (score: number) => {
     if (score >= 7.5) return "text-red-500";
@@ -89,86 +105,45 @@ const UserListTable = ({ users, columns, title, description }: UserListTableProp
         </Select>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {columns.map((column) => (
-              <TableHead key={column.accessor}>{column.header}</TableHead>
-            ))}
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
+      <div className="relative">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
               {columns.map((column) => (
-                <TableCell key={column.accessor}>
-                  {column.render ? (
-                    column.render(user[column.accessor])
-                  ) : column.accessor === "riskScore" ? (
-                    <span className={getScoreColor(user[column.accessor])}>
-                      {user[column.accessor].toFixed(1)}
-                    </span>
-                  ) : (
-                    user[column.accessor]
-                  )}
-                </TableCell>
+                <TableHead 
+                  key={column.accessor}
+                  className={`${column.headerClassName || column.className || ""} ${!isExpanded && column.className?.includes("hidden") ? "hidden" : ""}`}
+                >
+                  {column.header}
+                </TableHead>
               ))}
-              <TableCell>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAction(user.id, "review")}
-                    className="bg-green-50 hover:bg-green-100 text-green-600"
-                  >
-                    Review
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAction(user.id, "flag")}
-                    className="bg-orange-50 hover:bg-orange-100 text-orange-600"
-                  >
-                    Flag
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAction(user.id, "block")}
-                    className="bg-red-50 hover:bg-red-100 text-red-600"
-                  >
-                    Block
-                  </Button>
-                </div>
-              </TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {currentUsers.map((user) => (
+              <TableRow key={user.id}>
+                {columns.map((column) => (
+                  <TableCell 
+                    key={column.accessor}
+                    className={`${column.className || ""} ${!isExpanded && column.className?.includes("hidden") ? "hidden" : ""}`}
+                  >
+                    {column.render
+                      ? column.render(user[column.accessor], user)
+                      : user[column.accessor]}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
 
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href="#" />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#">1</PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#" isActive>2</PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#">3</PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext href="#" />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <TablePagination
+        currentPage={currentPage}
+        totalItems={users.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

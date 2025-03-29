@@ -161,10 +161,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
                 <XAxis 
                   dataKey={dataKeys.x} 
                   style={{ fontSize: '12px' }}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return `${value}\n${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-                  }}
+                  tickFormatter={(value) => value}
                 />
                 <YAxis style={{ fontSize: '12px' }} />
                 <Tooltip content={<CustomTooltip />} />
@@ -196,10 +193,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
                 <XAxis 
                   dataKey={dataKeys.x} 
                   style={{ fontSize: '12px' }}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return `${value}\n${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-                  }}
+                  tickFormatter={(value) => value}
                 />
                 <YAxis style={{ fontSize: '12px' }} />
                 <Tooltip />
