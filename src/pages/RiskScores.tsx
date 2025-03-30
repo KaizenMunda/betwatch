@@ -177,7 +177,8 @@ const RiskScores = () => {
       alerts: 12,
       lastUpdated: "2 hours ago",
       trendData: generateTrendData(8.2),
-      highRiskUsers: generateHighRiskUsers('bot')
+      highRiskUsers: generateHighRiskUsers('bot'),
+      last7Days: [8.2, 7.8, 8.5, 8.1, 7.9, 8.3, 8.2]
     },
     {
       name: "Dumping",
@@ -186,7 +187,8 @@ const RiskScores = () => {
       alerts: 5,
       lastUpdated: "1 hour ago",
       trendData: generateTrendData(6.5),
-      highRiskUsers: generateHighRiskUsers('dumping')
+      highRiskUsers: generateHighRiskUsers('dumping'),
+      last7Days: [6.5, 6.3, 6.7, 6.4, 6.6, 6.5, 6.5]
     },
     {
       name: "Collusion",
@@ -195,7 +197,8 @@ const RiskScores = () => {
       alerts: 3,
       lastUpdated: "30 minutes ago",
       trendData: generateTrendData(4.8),
-      highRiskUsers: generateHighRiskUsers('collusion')
+      highRiskUsers: generateHighRiskUsers('collusion'),
+      last7Days: [4.8, 5.1, 4.9, 5.0, 4.7, 4.8, 4.8]
     },
     {
       name: "Ghosting",
@@ -204,7 +207,8 @@ const RiskScores = () => {
       alerts: 8,
       lastUpdated: "45 minutes ago",
       trendData: generateTrendData(7.9),
-      highRiskUsers: generateHighRiskUsers('ghosting')
+      highRiskUsers: generateHighRiskUsers('ghosting'),
+      last7Days: [7.9, 7.5, 7.8, 7.6, 7.7, 7.8, 7.9]
     },
     {
       name: "Splash Collusion",
@@ -213,7 +217,8 @@ const RiskScores = () => {
       alerts: 4,
       lastUpdated: "1.5 hours ago",
       trendData: generateTrendData(5.5),
-      highRiskUsers: generateHighRiskUsers('splash')
+      highRiskUsers: generateHighRiskUsers('splash'),
+      last7Days: [5.5, 5.4, 5.6, 5.5, 5.3, 5.4, 5.5]
     },
     {
       name: "RTA",
@@ -222,7 +227,8 @@ const RiskScores = () => {
       alerts: 9,
       lastUpdated: "1 hour ago",
       trendData: generateTrendData(7.2),
-      highRiskUsers: generateHighRiskUsers('rta')
+      highRiskUsers: generateHighRiskUsers('rta'),
+      last7Days: [7.2, 6.8, 7.0, 7.1, 6.9, 7.0, 7.2]
     }
   ];
 
@@ -291,9 +297,9 @@ const RiskScores = () => {
               <TableRow>
                 <TableHead>Category</TableHead>
                 <TableHead>Score</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead>Trend</TableHead>
-                <TableHead>Alerts</TableHead>
+                <TableHead>Last 7 Days</TableHead>
+                <TableHead>Weekly Trend</TableHead>
+                <TableHead>Weekly Alerts</TableHead>
                 <TableHead>Last Updated</TableHead>
               </TableRow>
             </TableHeader>
@@ -306,11 +312,19 @@ const RiskScores = () => {
                       {category.score.toFixed(1)}
                     </span>
                   </TableCell>
-                  <TableCell className="w-[200px]">
-                    <Progress
-                      value={category.score * 10}
-                      className={getProgressColor(category.score)}
-                    />
+                  <TableCell>
+                    <div className="flex gap-1">
+                      {category.last7Days.map((score, i) => (
+                        <div
+                          key={i}
+                          className={`w-6 h-6 rounded text-xs flex items-center justify-center ${
+                            getScoreColor(score)
+                          } bg-opacity-10`}
+                        >
+                          {score.toFixed(1)}
+                        </div>
+                      ))}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <span className={

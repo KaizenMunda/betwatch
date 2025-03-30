@@ -61,39 +61,43 @@ const RiskyUserSessions = () => {
   const mockUsers: User[] = [
     {
       id: "1",
-      username: "player123",
+      username: "user123",
       sessionId: "1234567890",
       tableType: "50/100 NL Hold'em",
-      handsPlayed: 1250,
+      handsPlayed: 1500,
       bbsDumped: 150,
       winRate: -12.5,
       beneficiaryUser: "beneficiary456",
       beneficiaryId: "456",
-      numPlayers: 5.2,
+      numPlayers: 4.2,
       avgClosingAction: 2.8,
       bonusConversion: 120,
-      chipDumpingScore: 8.7,
-      status: "flagged",
+      chipDumpingScore: 8.5,
+      status: "active",
       location: "Mumbai, IN",
       date: new Date().toISOString().split('T')[0],
+      riskType: "Dumping",
+      riskScore: 8.5
     },
     {
       id: "2",
-      username: "gamer456",
+      username: "player456",
       sessionId: "2345678901",
       tableType: "25/50 PLO",
-      handsPlayed: 850,
-      bbsDumped: 75,
-      winRate: 5.8,
-      beneficiaryUser: "beneficiary789",
-      beneficiaryId: "789",
-      numPlayers: 4.8,
-      avgClosingAction: 1.5,
-      bonusConversion: 60,
-      chipDumpingScore: 6.4,
-      status: "review",
+      handsPlayed: 800,
+      bbsDumped: 0,
+      winRate: 5.2,
+      beneficiaryUser: "",
+      beneficiaryId: "",
+      numPlayers: 3.8,
+      avgClosingAction: 2.1,
+      bonusConversion: 85,
+      chipDumpingScore: 7.2,
+      status: "flagged",
       location: "Delhi, IN",
       date: new Date().toISOString().split('T')[0],
+      riskType: "Bot Detection",
+      riskScore: 8.2
     },
     {
       id: "3",
@@ -112,6 +116,8 @@ const RiskyUserSessions = () => {
       status: "active",
       location: "Bangalore, IN",
       date: new Date().toISOString().split('T')[0],
+      riskType: "Dumping",
+      riskScore: 9.2
     },
     {
       id: "4",
@@ -119,10 +125,10 @@ const RiskyUserSessions = () => {
       sessionId: "4567890123",
       tableType: "200/400 NL Hold'em",
       handsPlayed: 950,
-      bbsDumped: 120,
+      bbsDumped: 0,
       winRate: 8.2,
-      beneficiaryUser: "beneficiary456",
-      beneficiaryId: "456",
+      beneficiaryUser: "",
+      beneficiaryId: "",
       numPlayers: 4.2,
       avgClosingAction: 2.1,
       bonusConversion: 95,
@@ -130,6 +136,8 @@ const RiskyUserSessions = () => {
       status: "flagged",
       location: "Chennai, IN",
       date: new Date().toISOString().split('T')[0],
+      riskType: "RTA",
+      riskScore: 7.8
     },
     {
       id: "5",
@@ -137,10 +145,10 @@ const RiskyUserSessions = () => {
       sessionId: "5678901234",
       tableType: "50/100 PLO",
       handsPlayed: 1500,
-      bbsDumped: 180,
+      bbsDumped: 0,
       winRate: 3.5,
-      beneficiaryUser: "beneficiary789",
-      beneficiaryId: "789",
+      beneficiaryUser: "",
+      beneficiaryId: "",
       numPlayers: 5.8,
       avgClosingAction: 2.5,
       bonusConversion: 150,
@@ -148,6 +156,8 @@ const RiskyUserSessions = () => {
       status: "review",
       location: "Kolkata, IN",
       date: new Date().toISOString().split('T')[0],
+      riskType: "Ghosting",
+      riskScore: 8.1
     },
   ];
 
@@ -239,8 +249,8 @@ const RiskyUserSessions = () => {
     { 
       header: "Session ID", 
       accessor: "sessionId",
-      className: "border-r-2 border-gray-200 w-[180px]",
-      headerClassName: "border-r-2 border-gray-200 w-[180px]",
+      className: "w-[180px]",
+      headerClassName: "w-[180px]",
       render: (value: string, user: User) => (
         <div className="space-y-1">
           <span className="font-mono">{value}</span>
@@ -253,6 +263,23 @@ const RiskyUserSessions = () => {
             View Profit
           </Button>
         </div>
+      )
+    },
+    { 
+      header: "Risk Type", 
+      accessor: "riskType",
+      className: "w-[150px]",
+      headerClassName: "w-[150px]"
+    },
+    { 
+      header: "Risk Score", 
+      accessor: "riskScore",
+      className: "w-[120px]",
+      headerClassName: "w-[120px]",
+      render: (value: number) => (
+        <span className={value >= 7.5 ? "text-red-500" : value >= 5 ? "text-yellow-500" : "text-green-500"}>
+          {value.toFixed(1)}
+        </span>
       )
     },
     { 
@@ -271,7 +298,10 @@ const RiskyUserSessions = () => {
       header: "BBs Dumped", 
       accessor: "bbsDumped",
       className: isExpanded ? "w-[120px]" : "hidden",
-      headerClassName: isExpanded ? "w-[120px]" : "hidden"
+      headerClassName: isExpanded ? "w-[120px]" : "hidden",
+      render: (value: number, user: User) => (
+        <span>{user.riskType === "Dumping" ? value : "NA"}</span>
+      )
     },
     { 
       header: "Win Rate", 
@@ -320,30 +350,25 @@ const RiskyUserSessions = () => {
       headerClassName: "border-r-2 border-gray-200 w-[200px]",
       render: (value: string, user: User) => (
         <div className="space-y-1">
-          <a 
-            href={`/users/${user.beneficiaryId}`}
-            className="text-blue-600 hover:underline block"
-          >
-            {value}
-          </a>
-          <a 
-            href={`/users/${user.beneficiaryId}`}
-            className="text-sm text-gray-500 hover:underline block"
-          >
-            ID: {user.beneficiaryId}
-          </a>
+          {user.riskType === "Dumping" ? (
+            <>
+              <a 
+                href={`/users/${user.beneficiaryId}`}
+                className="text-blue-600 hover:underline block"
+              >
+                {value}
+              </a>
+              <a 
+                href={`/users/${user.beneficiaryId}`}
+                className="text-sm text-gray-500 hover:underline block"
+              >
+                ID: {user.beneficiaryId}
+              </a>
+            </>
+          ) : (
+            <span className="text-gray-500">NA</span>
+          )}
         </div>
-      )
-    },
-    { 
-      header: "Risk Score", 
-      accessor: "chipDumpingScore",
-      className: isExpanded ? "w-[150px]" : "sticky right-[360px] bg-white z-20 w-[150px]",
-      headerClassName: isExpanded ? "w-[150px]" : "sticky right-[360px] bg-white z-20 w-[150px]",
-      render: (value: number) => (
-        <span className={value >= 7.5 ? "text-red-500" : value >= 5 ? "text-yellow-500" : "text-green-500"}>
-          {value.toFixed(1)}
-        </span>
       )
     },
     { 

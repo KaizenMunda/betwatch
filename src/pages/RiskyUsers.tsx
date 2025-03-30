@@ -565,8 +565,7 @@ const RiskyUsers = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <SortableHeader column="id" label="User ID" />
-              <SortableHeader column="username" label="Username" />
+              <SortableHeader column="username" label="User" />
               <SortableHeader column="riskScore" label="Risk Score" />
               <SortableHeader column="riskCategory" label="Risk Category" />
               <SortableHeader column="lastActive" label="Last Activity" />
@@ -578,14 +577,21 @@ const RiskyUsers = () => {
           <TableBody>
             {currentUsers.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.id}</TableCell>
                 <TableCell>
-                  <a 
-                    href={`/users/${user.id}`} 
-                    className="text-blue-600 hover:underline cursor-pointer"
-                  >
-                    {user.username}
-                  </a>
+                  <div className="space-y-1">
+                    <a 
+                      href={`/users/${user.id}`} 
+                      className="text-blue-600 hover:underline block"
+                    >
+                      {user.username}
+                    </a>
+                    <a 
+                      href={`/users/${user.id}`} 
+                      className="text-sm text-gray-500 hover:underline block"
+                    >
+                      ID: {user.id}
+                    </a>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <span className={`font-bold ${getScoreColor(user.riskScore)}`}>

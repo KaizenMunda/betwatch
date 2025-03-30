@@ -36,6 +36,8 @@ export interface User {
   status: "active" | "flagged" | "review";
   location: string;
   date: string;
+  riskType: "Dumping" | "Bot Detection" | "RTA" | "Ghosting";
+  riskScore: number;
 }
 
 export interface Column {

@@ -103,7 +103,7 @@ const Search = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Username</TableHead>
+                <TableHead>User</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
@@ -116,12 +116,20 @@ const Search = () => {
               {mockSearchResults.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    <a 
-                      onClick={() => navigate(`/users/${user.id}`)}
-                      className="text-blue-600 hover:underline cursor-pointer"
-                    >
-                      {user.username}
-                    </a>
+                    <div className="space-y-1">
+                      <a 
+                        onClick={() => navigate(`/users/${user.id}`)}
+                        className="text-blue-600 hover:underline block"
+                      >
+                        {user.username}
+                      </a>
+                      <a 
+                        onClick={() => navigate(`/users/${user.id}`)}
+                        className="text-sm text-gray-500 hover:underline block"
+                      >
+                        ID: {user.id}
+                      </a>
+                    </div>
                   </TableCell>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>

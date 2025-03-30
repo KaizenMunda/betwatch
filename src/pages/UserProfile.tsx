@@ -1001,39 +1001,39 @@ const UserProfile = () => {
             <CardContent className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">Win Rate</div>
-                  <div className="text-3xl font-bold text-green-500">65.8%</div>
-                  <p className="text-sm text-muted-foreground">+2.3% from last month</p>
+                  <div className="text-sm text-muted-foreground">Cash Game Win Rate</div>
+                  <div className="text-3xl font-bold text-green-500">5.2 BB/100</div>
+                  <p className="text-sm text-muted-foreground">+0.8 BB/100 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">Average Win</div>
-                  <div className="text-3xl font-bold text-green-500">$2,450</div>
-                  <p className="text-sm text-muted-foreground">+$150 from last month</p>
+                  <div className="text-sm text-muted-foreground">NLH Win Rate</div>
+                  <div className="text-3xl font-bold text-green-500">6.8 BB/100</div>
+                  <p className="text-sm text-muted-foreground">+1.2 BB/100 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">Profit Factor</div>
-                  <div className="text-3xl font-bold text-green-500">2.1</div>
-                  <p className="text-sm text-muted-foreground">+0.2 from last month</p>
+                  <div className="text-sm text-muted-foreground">PLO Win Rate</div>
+                  <div className="text-3xl font-bold text-red-500">-2.4 BB/100</div>
+                  <p className="text-sm text-muted-foreground">-0.5 BB/100 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">Best Win Streak</div>
-                  <div className="text-3xl font-bold text-green-500">8</div>
-                  <p className="text-sm text-muted-foreground">Current streak: 3</p>
+                  <div className="text-sm text-muted-foreground">Tournament Cashes</div>
+                  <div className="text-3xl font-bold text-blue-500">24</div>
+                  <p className="text-sm text-muted-foreground">+3 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">Average Session Length</div>
-                  <div className="text-3xl font-bold text-blue-500">2.5h</div>
-                  <p className="text-sm text-muted-foreground">-0.3h from last month</p>
+                  <div className="text-sm text-muted-foreground">Tournament Net Winnings</div>
+                  <div className="text-3xl font-bold text-green-500">₹45,000</div>
+                  <p className="text-sm text-muted-foreground">+₹8,500 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
-                  <div className="text-sm text-muted-foreground">Risk Level</div>
-                  <div className="text-3xl font-bold text-yellow-500">Medium</div>
-                  <p className="text-sm text-muted-foreground">Stable for 3 months</p>
+                  <div className="text-sm text-muted-foreground">Tournament ROI</div>
+                  <div className="text-3xl font-bold text-green-500">42%</div>
+                  <p className="text-sm text-muted-foreground">+5% from last month</p>
                 </div>
               </div>
 

@@ -127,17 +127,20 @@ const ScoringAccuracy = () => {
   };
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Scoring Accuracy</h1>
-          <p className="text-muted-foreground">
-            Monitor false positivity and negativity rates in risk scoring
+    <div className="container mx-auto p-4 lg:p-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div className="space-y-2">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Scoring Accuracy</h1>
+          <p className="text-muted-foreground text-sm lg:text-base max-w-[600px]">
+            Monitor false positivity and negativity rates in risk scoring across different categories and time periods
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -149,12 +152,13 @@ const ScoringAccuracy = () => {
               <SelectItem value="rta">RTA Score</SelectItem>
             </SelectContent>
           </Select>
+          
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn(
-                  "w-[300px] justify-start text-left font-normal",
+                  "w-full sm:w-[300px] justify-start text-left font-normal",
                   !dateRange && "text-muted-foreground"
                 )}
               >
@@ -189,30 +193,47 @@ const ScoringAccuracy = () => {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Scoring Accuracy Rates</CardTitle>
-              <CardDescription className="space-y-1">
-                <p><span className="font-medium text-blue-600">False Positivity Rate:</span> Percentage of users cleared by risk analyst out of those that were auto flagged, relative to total auto flagged users</p>
-                <p><span className="font-medium text-red-600">False Negativity Rate:</span> Percentage of users blocked by risk analyst out of non-reviewed, non-flagged, non-blocked users, relative to total non-reviewed users</p>
+      {/* Main Chart Card */}
+      <Card className="shadow-md">
+        <CardHeader className="space-y-4">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div className="space-y-3">
+              <CardTitle className="text-xl">Scoring Accuracy Rates</CardTitle>
+              <CardDescription className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+                  <p className="text-sm">
+                    <span className="font-medium text-blue-600">False Positivity Rate:</span>{" "}
+                    Percentage of users cleared by risk analyst out of those that were auto flagged
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-600"></div>
+                  <p className="text-sm">
+                    <span className="font-medium text-red-600">False Negativity Rate:</span>{" "}
+                    Percentage of users blocked by risk analyst out of non-reviewed users
+                  </p>
+                </div>
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg border">
-              <div className="flex items-center gap-1">
+
+            {/* Change Indicators Legend */}
+            <div className="flex flex-col gap-2 p-4 bg-gray-50 rounded-lg border self-start">
+              <p className="text-sm font-medium text-gray-700 mb-1">Change Indicators</p>
+              <div className="flex items-center gap-2">
                 <div className="w-4 h-0.5 bg-purple-600"></div>
                 <span className="text-sm text-gray-600">Threshold Change</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <div className="w-4 h-0.5 bg-purple-800 border-t-2 border-dotted border-purple-800"></div>
                 <span className="text-sm text-gray-600">Weight Change</span>
               </div>
             </div>
           </div>
         </CardHeader>
+
         <CardContent>
-          <div className="h-[600px]">
+          <div className="h-[500px] lg:h-[600px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={chartData}

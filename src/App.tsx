@@ -12,7 +12,7 @@ import ScreenShare from "@/pages/indicators/ScreenShare";
 import SystemProcesses from "@/pages/indicators/SystemProcesses";
 import MouseMovement from "@/pages/indicators/MouseMovement";
 import ChipDumping from "@/pages/indicators/ChipDumping";
-import RiskThresholds from "@/pages/RiskThresholds";
+import Configuration from "@/pages/Configuration";
 import AdminUserManagement from "@/pages/AdminUserManagement";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
@@ -35,6 +35,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/risk-scores" element={<RiskScores />} />
+              <Route path="/configuration" element={<Configuration />} />
               <Route path="/scoring-accuracy" element={<ScoringAccuracy />} />
               <Route path="/indicators/card-theme" element={<CardTheme />} />
               <Route path="/indicators/product-interaction" element={<ProductInteraction />} />
@@ -42,7 +43,6 @@ function App() {
               <Route path="/indicators/system-processes" element={<SystemProcesses />} />
               <Route path="/indicators/mouse-movement" element={<MouseMovement />} />
               <Route path="/indicators/chip-dumping" element={<ChipDumping />} />
-              <Route path="/risk-thresholds" element={<RiskThresholds />} />
               <Route path="/user-management" element={<AdminUserManagement />} />
               <Route path="/user-action-history/:userId?" element={<UserActionHistory />} />
 
