@@ -8,6 +8,8 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { History } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Mock data for threshold changes
 const thresholdChanges = [
@@ -126,70 +128,19 @@ const ScoringAccuracy = () => {
     return null;
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="container mx-auto p-4 lg:p-8 space-y-8">
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Scoring Accuracy</h1>
-          <p className="text-muted-foreground text-sm lg:text-base max-w-[600px]">
-            Monitor false positivity and negativity rates in risk scoring across different categories and time periods
-          </p>
-        </div>
-        
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="bot">Bot Score</SelectItem>
-              <SelectItem value="dumping">Dumping Score</SelectItem>
-              <SelectItem value="collusion">Collusion Score</SelectItem>
-              <SelectItem value="ghosting">Ghosting Score</SelectItem>
-              <SelectItem value="splash">Splash Score</SelectItem>
-              <SelectItem value="rta">RTA Score</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full sm:w-[300px] justify-start text-left font-normal",
-                  !dateRange && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateRange.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")} -{" "}
-                      {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="range"
-                defaultMonth={dateRange.from}
-                selected={{
-                  from: dateRange.from,
-                  to: dateRange.to,
-                }}
-                onSelect={(range: any) => range && handleDateRangeChange(range)}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Scoring Accuracy</h1>
+            <p className="text-muted-foreground text-sm lg:text-base">
+              Monitor and analyze the accuracy of risk scoring over time
+            </p>
+          </div>
         </div>
       </div>
 
@@ -229,6 +180,70 @@ const ScoringAccuracy = () => {
                 <span className="text-sm text-gray-600">Weight Change</span>
               </div>
             </div>
+          </div>
+
+          {/* Controls */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bot">Bot Score</SelectItem>
+                <SelectItem value="dumping">Dumping Score</SelectItem>
+                <SelectItem value="collusion">Collusion Score</SelectItem>
+                <SelectItem value="ghosting">Ghosting Score</SelectItem>
+                <SelectItem value="splash">Splash Score</SelectItem>
+                <SelectItem value="rta">RTA Score</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full sm:w-[300px] justify-start text-left font-normal",
+                    !dateRange && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "LLL dd, y")} -{" "}
+                        {format(dateRange.to, "LLL dd, y")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "LLL dd, y")
+                    )
+                  ) : (
+                    <span>Pick a date range</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="range"
+                  defaultMonth={dateRange.from}
+                  selected={{
+                    from: dateRange.from,
+                    to: dateRange.to,
+                  }}
+                  onSelect={(range: any) => range && handleDateRangeChange(range)}
+                  numberOfMonths={2}
+                />
+              </PopoverContent>
+            </Popover>
+
+            <Button
+              onClick={() => navigate("/risk-threshold-history")}
+              variant="outline"
+              className="flex items-center gap-2 h-9"
+            >
+              <History className="h-4 w-4" />
+              View History
+            </Button>
           </div>
         </CardHeader>
 

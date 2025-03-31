@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 import { History } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // Mock data for dashboard users
 const dashboardUsers = [
@@ -135,13 +136,27 @@ const Configuration = () => {
     setAlertMediums(prev => ({ ...prev, [medium]: !prev[medium] }));
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="container mx-auto p-4 lg:p-8 space-y-8">
       <div className="space-y-2">
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Configuration</h1>
-        <p className="text-muted-foreground text-sm lg:text-base">
-          Manage risk thresholds, weights, and alert settings for the system
-        </p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Configuration</h1>
+            <p className="text-muted-foreground text-sm lg:text-base">
+              Manage risk thresholds, weights, and alert settings for the system
+            </p>
+          </div>
+          <Button
+            onClick={() => navigate("/risk-threshold-history")}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <History className="h-4 w-4" />
+            View History
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="thresholds" className="space-y-4">

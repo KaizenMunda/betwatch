@@ -71,7 +71,7 @@ const RiskThresholdHistory = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/risk-thresholds")}
+            onClick={() => navigate("/configuration")}
             className="h-9 w-9"
           >
             <ArrowLeft className="h-4 w-4" />
