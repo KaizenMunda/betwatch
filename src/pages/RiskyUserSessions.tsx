@@ -34,6 +34,27 @@ interface SessionProfitData {
   profit: number;
 }
 
+interface User {
+  id: string;
+  username: string;
+  sessionId: string;
+  tableType: string;
+  handsPlayed: number;
+  bbsDumped: number;
+  winRate: number;
+  beneficiaryUser: string;
+  beneficiaryId: string;
+  numPlayers: number;
+  avgClosingAction: number;
+  bonusConversion: number;
+  chipDumpingScore: number;
+  status: "review" | "clear" | "flagged";
+  location: string;
+  date: string;
+  riskType: string;
+  riskScore: number;
+}
+
 const RiskyUserSessions = () => {
   const [searchParams] = useSearchParams();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -73,7 +94,7 @@ const RiskyUserSessions = () => {
       avgClosingAction: 2.8,
       bonusConversion: 120,
       chipDumpingScore: 8.5,
-      status: "active",
+      status: "clear",
       location: "Mumbai, IN",
       date: new Date().toISOString().split('T')[0],
       riskType: "Dumping",
@@ -113,7 +134,7 @@ const RiskyUserSessions = () => {
       avgClosingAction: 3.2,
       bonusConversion: 180,
       chipDumpingScore: 9.2,
-      status: "active",
+      status: "clear",
       location: "Bangalore, IN",
       date: new Date().toISOString().split('T')[0],
       riskType: "Dumping",
@@ -372,7 +393,7 @@ const RiskyUserSessions = () => {
       )
     },
     { 
-      header: "Status", 
+      header: "Risk Status", 
       accessor: "status",
       className: isExpanded ? "w-[120px]" : "sticky right-[240px] bg-white z-20 w-[120px]",
       headerClassName: isExpanded ? "w-[120px]" : "sticky right-[240px] bg-white z-20 w-[120px]"
@@ -418,12 +439,11 @@ const RiskyUserSessions = () => {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader>
-            <CardTitle>Active Sessions</CardTitle>
-            <CardDescription>Currently monitored</CardDescription>
+            <CardTitle>Total User Sessions</CardTitle>
+            <CardDescription>Played on selected date</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">156</div>
-            <p className="text-sm text-muted-foreground">Live sessions</p>
           </CardContent>
         </Card>
 
@@ -434,14 +454,14 @@ const RiskyUserSessions = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-red-500">28</div>
-            <p className="text-sm text-muted-foreground">+3 today</p>
+            <p className="text-sm text-muted-foreground">+3 from previous day</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>Total BBs Dumped</CardTitle>
-            <CardDescription>Last 24 hours</CardDescription>
+            <CardDescription>On selected date</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">1,245</div>

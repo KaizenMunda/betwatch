@@ -17,7 +17,7 @@ const Search = () => {
       username: "rajesh123",
       name: "Rajesh Kumar",
       email: "rajesh@example.com",
-      status: "Active",
+      status: "Clear",
       lastActive: "2 hours ago",
       location: "Mumbai, IN",
     },
@@ -26,7 +26,7 @@ const Search = () => {
       username: "priya456",
       name: "Priya Singh",
       email: "priya@example.com",
-      status: "Active",
+      status: "Clear",
       lastActive: "5 hours ago",
       location: "Delhi, IN",
     },
@@ -66,7 +66,7 @@ const Search = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'active':
+      case 'clear':
         return 'text-green-600';
       case 'flagged':
         return 'text-orange-600';
@@ -106,10 +106,9 @@ const Search = () => {
                 <TableHead>User</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Risk Status</TableHead>
                 <TableHead>Last Active</TableHead>
                 <TableHead>Location</TableHead>
-                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -136,15 +135,6 @@ const Search = () => {
                   <TableCell className={getStatusColor(user.status)}>{user.status}</TableCell>
                   <TableCell>{user.lastActive}</TableCell>
                   <TableCell>{user.location}</TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(`/users/${user.id}`)}
-                    >
-                      View Profile
-                    </Button>
-                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
