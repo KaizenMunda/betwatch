@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Flag, Ban, Calendar as CalendarIcon, Search, Users } from "lucide-react";
+import { Flag, Ban, Calendar as CalendarIcon, Search, Users, Shield } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { TablePagination } from "@/components/ui-custom/TablePagination";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import ConfirmationDialog from "@/components/ui-custom/ConfirmationDialog";
 
 interface UserProfile {
   id: string;
@@ -48,7 +49,7 @@ interface UserProfile {
 
 const UserProfile = () => {
   const { userId } = useParams();
-  const [currentStatus, setCurrentStatus] = React.useState<'active' | 'flagged' | 'blocked'>('active');
+  const [currentStatus, setCurrentStatus] = React.useState<'active' | 'flagged' | 'blocked' | 'whitelisted'>('active');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const [activeTab, setActiveTab] = useState("overview");
@@ -76,6 +77,11 @@ const UserProfile = () => {
   } | null>(null);
   const [sessionPage, setSessionPage] = useState(1);
   const sessionsPerPage = 3;
+  const [confirmation, setConfirmation] = useState({
+    isOpen: false,
+    action: '',
+    userName: '',
+  });
 
   // Mock transaction data
   const mockTransactions = [
@@ -223,20 +229,62 @@ const UserProfile = () => {
     }
   ];
 
-  const handleAction = (action: 'flag' | 'unflag' | 'block' | 'unblock') => {
-    switch (action) {
-      case 'flag':
-        setCurrentStatus('flagged');
-        break;
-      case 'unflag':
-        setCurrentStatus('active');
-        break;
-      case 'block':
-        setCurrentStatus('blocked');
-        break;
-      case 'unblock':
-        setCurrentStatus('active');
-        break;
+  // Add mock flag history data
+  const flagHistory = [
+    {
+      id: 1,
+      date: new Date('2024-03-01'),
+      previousState: 'active',
+      newState: 'review',
+      changedBy: 'System',
+      duration: 2,
+      comment: 'Automatically flagged for review due to high risk score'
+    },
+    {
+      id: 2,
+      date: new Date('2024-03-03'),
+      previousState: 'review',
+      newState: 'flagged',
+      changedBy: 'admin@betwatch.in',
+      duration: 5,
+      comment: 'Manual review confirmed suspicious activity'
+    },
+    {
+      id: 3,
+      date: new Date('2024-03-08'),
+      previousState: 'flagged',
+      newState: 'whitelisted',
+      changedBy: 'admin@betwatch.in',
+      duration: 3,
+      comment: 'User provided valid documentation'
+    },
+    {
+      id: 4,
+      date: new Date('2024-03-11'),
+      previousState: 'whitelisted',
+      newState: 'active',
+      changedBy: 'System',
+      duration: 0,
+      comment: 'Whitelist period expired'
+    }
+  ];
+
+  const handleAction = (action: 'flag' | 'unflag' | 'block' | 'unblock' | 'whitelist' | 'unwhitelist', comment?: string) => {
+    // In a real application, this would make an API call with the comment
+    console.log(`${action} user:`, userId, "with comment:", comment);
+    
+    if (action === 'flag') {
+      setCurrentStatus('flagged');
+    } else if (action === 'unflag') {
+      setCurrentStatus('active');
+    } else if (action === 'block') {
+      setCurrentStatus('blocked');
+    } else if (action === 'unblock') {
+      setCurrentStatus('active');
+    } else if (action === 'whitelist') {
+      setCurrentStatus('whitelisted');
+    } else if (action === 'unwhitelist') {
+      setCurrentStatus('active');
     }
   };
 
@@ -287,132 +335,97 @@ const UserProfile = () => {
     setSessionPage(pageNumber);
   };
 
+  const closeConfirmation = () => {
+    setConfirmation({
+      isOpen: false,
+      action: '',
+      userName: '',
+    });
+  };
+
   return (
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">User Profile</h1>
         <div className="flex items-center gap-4">
           <div className="text-sm text-muted-foreground">
-            User ID: {mockUser.id}
+            User ID: {mockUser.id} | Current Status = Clear
           </div>
           <div className="flex gap-2">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" className="text-yellow-600 border-yellow-600 hover:bg-yellow-50">
-                  <Search className="h-4 w-4 mr-1" />
-                  Review User
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Review {mockUser.username}'s Account</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to mark {mockUser.username} for review? This will flag their account for detailed investigation.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction className="bg-blue-600">
-                    Review User
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
+              onClick={() => setConfirmation({ isOpen: true, action: 'review', userName: mockUser.username })}
+            >
+              <Search className="h-4 w-4 mr-1" />
+              Review User
+            </Button>
 
             {currentStatus !== 'flagged' ? (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-orange-600 border-orange-600 hover:bg-orange-50">
-                    <Flag className="h-4 w-4 mr-1" />
-                    Flag User
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Flag {mockUser.username}'s Account</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to flag {mockUser.username}? This will mark their account for review.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleAction('flag')} className="bg-orange-600">
-                      Flag User
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                onClick={() => setConfirmation({ isOpen: true, action: 'flag', userName: mockUser.username })}
+              >
+                <Flag className="h-4 w-4 mr-1" />
+                Flag User
+              </Button>
             ) : (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-green-600 border-green-600 hover:bg-green-50">
-                    <Flag className="h-4 w-4 mr-1" />
-                    Unflag User
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Remove Flag from {mockUser.username}'s Account</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to remove the flag from {mockUser.username}'s account?
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleAction('unflag')} className="bg-green-600">
-                      Unflag User
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-green-600 border-green-600 hover:bg-green-50"
+                onClick={() => setConfirmation({ isOpen: true, action: 'unflag', userName: mockUser.username })}
+              >
+                <Flag className="h-4 w-4 mr-1" />
+                Unflag User
+              </Button>
             )}
 
             {currentStatus !== 'blocked' ? (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-red-600 border-red-600 hover:bg-red-50">
-                    <Ban className="h-4 w-4 mr-1" />
-                    Block User
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Block {mockUser.username}'s Account</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to block {mockUser.username}? This will prevent them from accessing their account.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleAction('block')} className="bg-red-600">
-                      Block User
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-red-600 border-red-600 hover:bg-red-50"
+                onClick={() => setConfirmation({ isOpen: true, action: 'block', userName: mockUser.username })}
+              >
+                <Ban className="h-4 w-4 mr-1" />
+                Block User
+              </Button>
             ) : (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-green-600 border-green-600 hover:bg-green-50">
-                    <Ban className="h-4 w-4 mr-1" />
-                    Unblock User
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Unblock {mockUser.username}'s Account</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to unblock {mockUser.username}? This will restore their account access.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleAction('unblock')} className="bg-green-600">
-                      Unblock User
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-green-600 border-green-600 hover:bg-green-50"
+                onClick={() => setConfirmation({ isOpen: true, action: 'unblock', userName: mockUser.username })}
+              >
+                <Ban className="h-4 w-4 mr-1" />
+                Unblock User
+              </Button>
+            )}
+
+            {currentStatus !== 'whitelisted' ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-green-600 border-green-600 hover:bg-green-50"
+                onClick={() => setConfirmation({ isOpen: true, action: 'whitelist', userName: mockUser.username })}
+              >
+                <Shield className="h-4 w-4 mr-1" />
+                Whitelist User
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-green-600 border-green-600 hover:bg-green-50"
+                onClick={() => setConfirmation({ isOpen: true, action: 'unwhitelist', userName: mockUser.username })}
+              >
+                <Shield className="h-4 w-4 mr-1" />
+                Remove from Whitelist
+              </Button>
             )}
           </div>
         </div>
@@ -429,161 +442,189 @@ const UserProfile = () => {
         </TabsList>
 
         <TabsContent value="overview">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>User details and account information</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-muted-foreground">Name</div>
-                    <div className="font-medium">{mockUser.name}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Username</div>
-                    <div className="font-medium">{mockUser.username}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">User ID</div>
-                    <div className="font-medium">{mockUser.userId}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Partner ID</div>
-                    <div className="font-medium">{mockUser.partnerId}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Registration</div>
-                    <div className="font-medium">{format(mockUser.registrationDate, 'MMM d, yyyy HH:mm')}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">First Gameplay</div>
-                    <div className="font-medium">{format(mockUser.firstGameplayDate, 'MMM d, yyyy HH:mm')}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Time to First Gameplay</div>
-                    <div className="font-medium">
-                      {Math.round((mockUser.firstGameplayDate.getTime() - mockUser.registrationDate.getTime()) / (1000 * 60 * 60))} hours
+          <div className="grid gap-6 md:grid-cols-12">
+            <div className="md:col-span-7 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Basic Information</CardTitle>
+                  <CardDescription>User details and account information</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-4">
+                      <div>
+                        <div className="text-sm text-muted-foreground">Name</div>
+                        <div className="font-medium">{mockUser.name}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Username</div>
+                        <div className="font-medium">{mockUser.username}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">User ID</div>
+                        <div className="font-medium">{mockUser.userId}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Partner ID</div>
+                        <div className="font-medium">{mockUser.partnerId}</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <div className="text-sm text-muted-foreground">Registration</div>
+                        <div className="font-medium">{format(mockUser.registrationDate, 'MMM d, yyyy HH:mm')}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">First Gameplay</div>
+                        <div className="font-medium">{format(mockUser.firstGameplayDate, 'MMM d, yyyy HH:mm')}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Time to First Gameplay</div>
+                        <div className="font-medium">
+                          {Math.round((mockUser.firstGameplayDate.getTime() - mockUser.registrationDate.getTime()) / (1000 * 60 * 60))} hours
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Location</div>
+                        <div className="font-medium">{mockUser.profile.location}</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <div className="text-sm text-muted-foreground">VIP Tag</div>
+                        <div className="font-medium">Gold</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Cash / Tournament Preference</div>
+                        <div className="font-medium">Cash</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Primary Game Format</div>
+                        <div className="font-medium">No-Limit Hold'em</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Preferred Stake</div>
+                        <div className="font-medium">₹500/₹1000</div>
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Location</div>
-                    <div className="font-medium">{mockUser.profile.location}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Account Status</div>
-                    <div className="font-medium">{mockUser.profile.status}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Last Active</div>
-                    <div className="font-medium">{format(mockUser.lastActive, 'MMM d, yyyy HH:mm')}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Risk Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-sm text-muted-foreground">Risk Score</div>
-                    <div className="font-medium text-red-500">{mockUser.fraudScore.value}</div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Flag History</CardTitle>
+                  <CardDescription>Track of user state changes and durations</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {flagHistory.map((change) => (
+                      <div key={change.id} className="border-l-4 pl-4 space-y-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">
+                              {change.previousState.charAt(0).toUpperCase() + change.previousState.slice(1)} →{' '}
+                              {change.newState.charAt(0).toUpperCase() + change.newState.slice(1)}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {format(change.date, 'MMM d, yyyy HH:mm')}
+                            </div>
+                          </div>
+                          <div className="text-sm">
+                            <span className={change.changedBy === 'System' ? 'text-blue-600' : 'text-purple-600'}>
+                              {change.changedBy}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Duration: {change.duration} {change.duration === 1 ? 'day' : 'days'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {change.comment}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Risk Level</div>
-                    <div className="font-medium">{mockUser.riskMetrics.riskLevel}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">KYC Status</div>
-                    <div className="font-medium text-green-500">{mockUser.riskMetrics.kycStatus}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Status</div>
-                    <div className="font-medium">{currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Total Transactions</div>
-                    <div className="font-medium">{mockUser.profile.totalTransactions}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Last Active</div>
-                    <div className="font-medium">{mockUser.lastActive.toLocaleDateString()}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
 
-          <div className="grid gap-6 md:grid-cols-2 mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Product Interaction</CardTitle>
-                <CardDescription>User's product preferences and interaction patterns</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-sm text-muted-foreground">Current Product Interaction Score</div>
-                    <div className={cn(
-                      "font-medium",
-                      8.2 >= 7 ? "text-red-500" :
-                      8.2 >= 5 ? "text-yellow-500" :
-                      "text-green-500"
-                    )}>
-                      8.2
+            <div className="md:col-span-5 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Risk Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Risk Score</div>
+                      <div className="font-medium text-red-500">{mockUser.fraudScore.value}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Risk Level</div>
+                      <div className="font-medium">{mockUser.riskMetrics.riskLevel}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">KYC Status</div>
+                      <div className="font-medium text-green-500">{mockUser.riskMetrics.kycStatus}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Status</div>
+                      <div className="font-medium">{currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Total Transactions</div>
+                      <div className="font-medium">{mockUser.profile.totalTransactions}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Last Active</div>
+                      <div className="font-medium">{mockUser.lastActive.toLocaleDateString()}</div>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Device</div>
-                    <div className="font-medium">Mobile</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Card Theme</div>
-                    <div className="font-medium">{mockUser.preferences.cardTheme}</div>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    asChild
-                  >
-                    <Link to="/indicators/product-interaction">
-                      Product Interaction Details
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>User Preferences</CardTitle>
-                <CardDescription>Personalized gaming preferences</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-sm text-muted-foreground">VIP Tag</div>
-                    <div className="font-medium">Gold</div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Product Interaction</CardTitle>
+                  <CardDescription>User's product preferences and interaction patterns</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Current Product Interaction Score</div>
+                      <div className={cn(
+                        "font-medium",
+                        8.2 >= 7 ? "text-red-500" :
+                        8.2 >= 5 ? "text-yellow-500" :
+                        "text-green-500"
+                      )}>
+                        8.2
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Device</div>
+                      <div className="font-medium">Mobile</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Card Theme</div>
+                      <div className="font-medium">{mockUser.preferences.cardTheme}</div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      asChild
+                    >
+                      <Link to="/indicators/product-interaction">
+                        Product Interaction Details
+                      </Link>
+                    </Button>
                   </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Cash / Tournament Preference</div>
-                    <div className="font-medium">Cash</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Primary Game Format</div>
-                    <div className="font-medium">No-Limit Hold'em</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-muted-foreground">Preferred Stake</div>
-                    <div className="font-medium">₹500/₹1000</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
 
@@ -1447,6 +1488,59 @@ const UserProfile = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ConfirmationDialog
+        isOpen={confirmation.isOpen}
+        onClose={closeConfirmation}
+        onConfirm={handleAction}
+        title={
+          confirmation.action === "block"
+            ? "Block User"
+            : confirmation.action === "unblock"
+            ? "Unblock User"
+            : confirmation.action === "flag"
+            ? "Flag User"
+            : confirmation.action === "unflag"
+            ? "Unflag User"
+            : confirmation.action === "whitelist"
+            ? "Whitelist User"
+            : confirmation.action === "unwhitelist"
+            ? "Remove from Whitelist"
+            : "Review User"
+        }
+        description={
+          confirmation.action === "block"
+            ? `Are you sure you want to block ${confirmation.userName}? This will prevent them from accessing the platform.`
+            : confirmation.action === "unblock"
+            ? `Are you sure you want to unblock ${confirmation.userName}? This will restore their access to the platform.`
+            : confirmation.action === "flag"
+            ? `Are you sure you want to flag ${confirmation.userName} for suspicious activity?`
+            : confirmation.action === "unflag"
+            ? `Are you sure you want to remove the flag from ${confirmation.userName}'s account?`
+            : confirmation.action === "whitelist"
+            ? `Are you sure you want to whitelist ${confirmation.userName}? This will exempt them from risk monitoring.`
+            : confirmation.action === "unwhitelist"
+            ? `Are you sure you want to remove ${confirmation.userName} from the whitelist? This will resume risk monitoring.`
+            : `Are you sure you want to mark ${confirmation.userName} for review?`
+        }
+        actionLabel={
+          confirmation.action === "block"
+            ? "Block"
+            : confirmation.action === "unblock"
+            ? "Unblock"
+            : confirmation.action === "flag"
+            ? "Flag"
+            : confirmation.action === "unflag"
+            ? "Unflag"
+            : confirmation.action === "whitelist"
+            ? "Whitelist"
+            : confirmation.action === "unwhitelist"
+            ? "Remove from Whitelist"
+            : "Review"
+        }
+        variant={confirmation.action === "block" || confirmation.action === "flag" ? "destructive" : "default"}
+        showComment={true}
+      />
     </div>
   );
 };

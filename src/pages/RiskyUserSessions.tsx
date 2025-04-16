@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import UserListTable, { User, Column } from "@/components/ui-custom/UserListTable";
+import UserListTable, { Column } from "@/components/ui-custom/UserListTable";
 import ConfirmationDialog from "@/components/ui-custom/ConfirmationDialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -48,10 +48,10 @@ interface User {
   avgClosingAction: number;
   bonusConversion: number;
   chipDumpingScore: number;
-  status: "review" | "clear" | "flagged";
+  status: "review" | "active" | "flagged";
   location: string;
   date: string;
-  riskType: string;
+  riskType: "Dumping" | "Bot Detection" | "RTA" | "Ghosting";
   riskScore: number;
 }
 
@@ -94,7 +94,7 @@ const RiskyUserSessions = () => {
       avgClosingAction: 2.8,
       bonusConversion: 120,
       chipDumpingScore: 8.5,
-      status: "clear",
+      status: "active",
       location: "Mumbai, IN",
       date: new Date().toISOString().split('T')[0],
       riskType: "Dumping",
@@ -114,7 +114,7 @@ const RiskyUserSessions = () => {
       avgClosingAction: 2.1,
       bonusConversion: 85,
       chipDumpingScore: 7.2,
-      status: "flagged",
+      status: "active",
       location: "Delhi, IN",
       date: new Date().toISOString().split('T')[0],
       riskType: "Bot Detection",
@@ -134,7 +134,7 @@ const RiskyUserSessions = () => {
       avgClosingAction: 3.2,
       bonusConversion: 180,
       chipDumpingScore: 9.2,
-      status: "clear",
+      status: "active",
       location: "Bangalore, IN",
       date: new Date().toISOString().split('T')[0],
       riskType: "Dumping",
@@ -154,7 +154,7 @@ const RiskyUserSessions = () => {
       avgClosingAction: 2.1,
       bonusConversion: 95,
       chipDumpingScore: 7.8,
-      status: "flagged",
+      status: "active",
       location: "Chennai, IN",
       date: new Date().toISOString().split('T')[0],
       riskType: "RTA",
@@ -174,7 +174,7 @@ const RiskyUserSessions = () => {
       avgClosingAction: 2.5,
       bonusConversion: 150,
       chipDumpingScore: 8.1,
-      status: "review",
+      status: "active",
       location: "Kolkata, IN",
       date: new Date().toISOString().split('T')[0],
       riskType: "Ghosting",
@@ -199,11 +199,11 @@ const RiskyUserSessions = () => {
     });
   };
 
-  const executeAction = () => {
+  const executeAction = (comment?: string) => {
     if (!confirmation.action || !confirmation.userId) return;
 
-    // In a real application, this would make an API call
-    console.log(`${confirmation.action} user:`, confirmation.userId);
+    // In a real application, this would make an API call with the comment
+    console.log(`${confirmation.action} user:`, confirmation.userId, "with comment:", comment);
     
     setConfirmation({
       isOpen: false,
@@ -250,7 +250,7 @@ const RiskyUserSessions = () => {
       accessor: "username",
       className: "sticky left-0 bg-white z-20 w-[200px]",
       headerClassName: "sticky left-0 bg-white z-20 w-[200px]",
-      render: (value: string, user: User) => (
+      render: (value: string, user: { id: string }) => (
         <div className="space-y-1">
           <a 
             href={`/users/${user.id}`}
@@ -271,8 +271,8 @@ const RiskyUserSessions = () => {
       header: "Session ID", 
       accessor: "sessionId",
       className: "w-[180px]",
-      headerClassName: "w-[180px]",
-      render: (value: string, user: User) => (
+      headerClassName: "w-[180px]", 
+      render: (value: any, user: { id: string }) => (
         <div className="space-y-1">
           <span className="font-mono">{value}</span>
           <Button
@@ -320,7 +320,7 @@ const RiskyUserSessions = () => {
       accessor: "bbsDumped",
       className: isExpanded ? "w-[120px]" : "hidden",
       headerClassName: isExpanded ? "w-[120px]" : "hidden",
-      render: (value: number, user: User) => (
+      render: (value: number, user: any) => (
         <span>{user.riskType === "Dumping" ? value : "NA"}</span>
       )
     },
@@ -369,11 +369,11 @@ const RiskyUserSessions = () => {
       accessor: "beneficiaryUser",
       className: "border-r-2 border-gray-200 w-[200px]",
       headerClassName: "border-r-2 border-gray-200 w-[200px]",
-      render: (value: string, user: User) => (
+      render: (value: string, user: any) => (
         <div className="space-y-1">
           {user.riskType === "Dumping" ? (
             <>
-              <a 
+              <a
                 href={`/users/${user.beneficiaryId}`}
                 className="text-blue-600 hover:underline block"
               >
@@ -396,14 +396,19 @@ const RiskyUserSessions = () => {
       header: "Risk Status", 
       accessor: "status",
       className: isExpanded ? "w-[120px]" : "sticky right-[240px] bg-white z-20 w-[120px]",
-      headerClassName: isExpanded ? "w-[120px]" : "sticky right-[240px] bg-white z-20 w-[120px]"
+      headerClassName: isExpanded ? "w-[120px]" : "sticky right-[240px] bg-white z-20 w-[120px]",
+      render: (value: string) => (
+        <span className={value === "flagged" ? "text-red-500" : value === "review" ? "text-yellow-500" : "text-green-500"}>
+          {value.charAt(0).toUpperCase() + value.slice(1)}
+        </span>
+      )
     },
     { 
       header: "Actions", 
       accessor: "id",
       className: "sticky right-0 bg-white z-20 w-[240px]",
       headerClassName: "sticky right-0 bg-white z-20 w-[240px]",
-      render: (value: string, user: User) => (
+      render: (value: string, user: any) => (
         <div className="flex gap-1">
           <Button
             variant="outline"
@@ -574,6 +579,7 @@ const RiskyUserSessions = () => {
             : "Review"
         }
         variant="destructive"
+        showComment={true}
       />
 
       {/* Session Profit Dialog */}
@@ -610,6 +616,6 @@ const RiskyUserSessions = () => {
       </Dialog>
     </div>
   );
-};
+}
 
-export default RiskyUserSessions; 
+export default RiskyUserSessions;

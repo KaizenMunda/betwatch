@@ -354,11 +354,11 @@ const RiskyUsers = () => {
     });
   };
 
-  const executeAction = () => {
+  const executeAction = (comment?: string) => {
     if (!confirmation.action || !confirmation.userId) return;
 
-    // In a real application, this would make an API call
-    console.log(`${confirmation.action} user:`, confirmation.userId);
+    // In a real application, this would make an API call with the comment
+    console.log(`${confirmation.action} user:`, confirmation.userId, "with comment:", comment);
     
     setConfirmation({
       isOpen: false,
@@ -745,8 +745,13 @@ const RiskyUsers = () => {
             ? `Are you sure you want to block ${confirmation.userName}? This will prevent them from accessing the platform.`
             : `Are you sure you want to flag ${confirmation.userName} for suspicious activity?`
         }
-        actionLabel={confirmation.action === "block" ? "Block" : "Flag"}
+        actionLabel={
+          confirmation.action === "block"
+            ? "Block"
+            : "Flag"
+        }
         variant="destructive"
+        showComment={true}
       />
 
       {/* Whitelist Dialog */}
