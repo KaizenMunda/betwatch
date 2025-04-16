@@ -107,7 +107,7 @@ export function Sidebar({ className, isMobile = false }: SidebarProps) {
                       "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
                   )}
                 >
-                  <AlertTriangle className="h-4 w-4" />
+                  <Activity className="h-4 w-4" />
                   <span>Risk Scores</span>
                 </Link>
                 <Link
@@ -231,17 +231,6 @@ export function Sidebar({ className, isMobile = false }: SidebarProps) {
                 >
                   <Mouse className="h-4 w-4" />
                   <span>Mouse Movement</span>
-                </Link>
-                <Link
-                  to="/indicators/chip-dumping"
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-50",
-                    location.pathname === "/indicators/chip-dumping" &&
-                      "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-50"
-                  )}
-                >
-                  <Coins className="h-4 w-4" />
-                  <span>Chip Dumping</span>
                 </Link>
               </div>
             </div>

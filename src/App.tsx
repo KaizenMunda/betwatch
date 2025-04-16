@@ -11,7 +11,6 @@ import ProductInteraction from "@/pages/indicators/ProductInteraction";
 import ScreenShare from "@/pages/indicators/ScreenShare";
 import SystemProcesses from "@/pages/indicators/SystemProcesses";
 import MouseMovement from "@/pages/indicators/MouseMovement";
-import ChipDumping from "@/pages/indicators/ChipDumping";
 import Configuration from "@/pages/Configuration";
 import AdminUserManagement from "@/pages/AdminUserManagement";
 import NotFound from "@/pages/NotFound";
@@ -42,7 +41,6 @@ function App() {
               <Route path="/indicators/screen-share" element={<ScreenShare />} />
               <Route path="/indicators/system-processes" element={<SystemProcesses />} />
               <Route path="/indicators/mouse-movement" element={<MouseMovement />} />
-              <Route path="/indicators/chip-dumping" element={<ChipDumping />} />
               <Route path="/user-management" element={<AdminUserManagement />} />
               <Route path="/user-action-history/:userId?" element={<UserActionHistory />} />
 

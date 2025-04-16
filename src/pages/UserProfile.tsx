@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Flag, Ban, Calendar as CalendarIcon, Search, Users, Shield } from "lucide-react";
+import { Flag, Ban, Calendar as CalendarIcon, Search, Users, Shield, MessageSquare } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -82,6 +82,7 @@ const UserProfile = () => {
     action: '',
     userName: '',
   });
+  const [selectedComment, setSelectedComment] = useState<string | null>(null);
 
   // Mock transaction data
   const mockTransactions = [
@@ -532,17 +533,37 @@ const UserProfile = () => {
                               {format(change.date, 'MMM d, yyyy HH:mm')}
                             </div>
                           </div>
-                          <div className="text-sm">
+                          <div className="flex items-center gap-2">
                             <span className={change.changedBy === 'System' ? 'text-blue-600' : 'text-purple-600'}>
                               {change.changedBy}
                             </span>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8"
+                                  onClick={() => setSelectedComment(change.comment)}
+                                >
+                                  <MessageSquare className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>State Change Comment</DialogTitle>
+                                  <DialogDescription>
+                                    Comment added when changing state from {change.previousState} to {change.newState}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="mt-4 p-4 bg-muted rounded-lg">
+                                  {change.comment}
+                                </div>
+                              </DialogContent>
+                            </Dialog>
                           </div>
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Duration: {change.duration} {change.duration === 1 ? 'day' : 'days'}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {change.comment}
                         </div>
                       </div>
                     ))}
