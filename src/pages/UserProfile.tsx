@@ -83,6 +83,8 @@ const UserProfile = () => {
     userName: '',
   });
   const [selectedComment, setSelectedComment] = useState<string | null>(null);
+  const [actionHistoryPage, setActionHistoryPage] = useState(1);
+  const actionHistoryPerPage = 5;
 
   // Mock transaction data
   const mockTransactions = [
@@ -239,7 +241,9 @@ const UserProfile = () => {
       newState: 'review',
       changedBy: 'System',
       duration: 2,
-      comment: 'Automatically flagged for review due to high risk score'
+      comment: 'Automatically flagged for review due to high risk score',
+      category: 'Risk Score',
+      score: 8.5
     },
     {
       id: 2,
@@ -248,7 +252,9 @@ const UserProfile = () => {
       newState: 'flagged',
       changedBy: 'admin@betwatch.in',
       duration: 5,
-      comment: 'Manual review confirmed suspicious activity'
+      comment: 'Manual review confirmed suspicious activity',
+      category: 'Manual Review',
+      score: 9.2
     },
     {
       id: 3,
@@ -257,7 +263,9 @@ const UserProfile = () => {
       newState: 'whitelisted',
       changedBy: 'admin@betwatch.in',
       duration: 3,
-      comment: 'User provided valid documentation'
+      comment: 'User provided valid documentation',
+      category: 'Documentation',
+      score: 2.1
     },
     {
       id: 4,
@@ -266,9 +274,24 @@ const UserProfile = () => {
       newState: 'active',
       changedBy: 'System',
       duration: 0,
-      comment: 'Whitelist period expired'
+      comment: 'Whitelist period expired',
+      category: 'System',
+      score: 1.0
     }
   ];
+
+  // Sort flag history by date (latest to oldest)
+  const sortedFlagHistory = [...flagHistory].sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  // Get paginated data
+  const paginatedFlagHistory = sortedFlagHistory.slice(
+    (actionHistoryPage - 1) * actionHistoryPerPage,
+    actionHistoryPage * actionHistoryPerPage
+  );
+
+  const handleActionHistoryPageChange = (pageNumber) => {
+    setActionHistoryPage(pageNumber);
+  };
 
   const handleAction = (action: 'flag' | 'unflag' | 'block' | 'unblock' | 'whitelist' | 'unwhitelist', comment?: string) => {
     // In a real application, this would make an API call with the comment
@@ -433,13 +456,14 @@ const UserProfile = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6 gap-4">
+        <TabsList className="grid w-full grid-cols-7 gap-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="gameplay">Gameplay Stats</TabsTrigger>
           <TabsTrigger value="winnability">Winnability</TabsTrigger>
           <TabsTrigger value="risk">Risk Analysis</TabsTrigger>
           <TabsTrigger value="device">Device</TabsTrigger>
+          <TabsTrigger value="action-history">Action History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -1053,9 +1077,7 @@ const UserProfile = () => {
                   <SelectValue placeholder="Select hand range" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1000">Last 1000 hands</SelectItem>
-                  <SelectItem value="10000">Last 10000 hands</SelectItem>
-                  <SelectItem value="1000000">Last 1000000 hands</SelectItem>
+                  <SelectItem value="10000">Last 10k Hands</SelectItem>
                   <SelectItem value="lifetime">Lifetime</SelectItem>
                 </SelectContent>
               </Select>
@@ -1065,95 +1087,125 @@ const UserProfile = () => {
                 <div className="p-4 border rounded-lg space-y-2">
                   <div className="text-sm text-muted-foreground">Cash Game Win Rate</div>
                   <div className="text-3xl font-bold text-green-500">5.2 BB/100</div>
-                  <p className="text-sm text-muted-foreground">+0.8 BB/100 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
                   <div className="text-sm text-muted-foreground">NLH Win Rate</div>
                   <div className="text-3xl font-bold text-green-500">6.8 BB/100</div>
-                  <p className="text-sm text-muted-foreground">+1.2 BB/100 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
                   <div className="text-sm text-muted-foreground">PLO Win Rate</div>
                   <div className="text-3xl font-bold text-red-500">-2.4 BB/100</div>
-                  <p className="text-sm text-muted-foreground">-0.5 BB/100 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
                   <div className="text-sm text-muted-foreground">Tournament Cashes</div>
                   <div className="text-3xl font-bold text-blue-500">24</div>
-                  <p className="text-sm text-muted-foreground">+3 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
                   <div className="text-sm text-muted-foreground">Tournament Net Winnings</div>
                   <div className="text-3xl font-bold text-green-500">₹45,000</div>
-                  <p className="text-sm text-muted-foreground">+₹8,500 from last month</p>
                 </div>
 
                 <div className="p-4 border rounded-lg space-y-2">
                   <div className="text-sm text-muted-foreground">Tournament ROI</div>
                   <div className="text-3xl font-bold text-green-500">42%</div>
-                  <p className="text-sm text-muted-foreground">+5% from last month</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              <div className="border-t pt-6">
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold">Win Rate Trend</h3>
-                  <p className="text-sm text-muted-foreground">Track win rate and EV win rate over time</p>
-                </div>
-                <div className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart 
-                      data={getFilteredData()}
-                      margin={{ top: 20, right: 30, left: 80, bottom: 50 }}
-                    >
-                      <XAxis 
-                        dataKey="hands" 
-                        label={{ 
-                          value: "Number of Hands", 
-                          position: "insideBottom",
-                          offset: -10
-                        }}
-                      />
-                      <YAxis 
-                        label={{ 
-                          value: "Win Rate (BB/100 hands)", 
-                          angle: -90, 
-                          position: "outside",
-                          offset: -60
-                        }}
-                        domain={['auto', 'auto']}
-                        padding={{ top: 20, bottom: 20 }}
-                      />
-                      <Tooltip />
-                      <Legend 
-                        verticalAlign="top" 
-                        height={36}
-                        wrapperStyle={{
-                          paddingTop: "10px",
-                          paddingBottom: "20px"
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="rate"
-                        stroke="#22c55e"
-                        name="Win Rate"
-                        dot={{ r: 4 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="evRate"
-                        stroke="#3b82f6"
-                        name="EV Win Rate"
-                        dot={{ r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle>Win Rate Trend</CardTitle>
+                <CardDescription>Track win rate and EV win rate over time</CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedDate ? (
+                        format(selectedDate, "LLL dd, y")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="end">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => date && setSelectedDate(date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Select value={handRange} onValueChange={setHandRange}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Hands" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1000">1k Hands</SelectItem>
+                    <SelectItem value="10000">10k Hands</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={() => setHandRange(handRange)}>Submit</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart 
+                    data={getFilteredData()}
+                    margin={{ top: 20, right: 30, left: 80, bottom: 50 }}
+                  >
+                    <XAxis 
+                      dataKey="hands" 
+                      label={{ 
+                        value: "Number of Hands", 
+                        position: "insideBottom",
+                        offset: -10
+                      }}
+                    />
+                    <YAxis 
+                      label={{ 
+                        value: "Win Rate (BB/100 hands)", 
+                        angle: -90, 
+                        position: "outside",
+                        offset: -60
+                      }}
+                      domain={['auto', 'auto']}
+                      padding={{ top: 20, bottom: 20 }}
+                    />
+                    <Tooltip />
+                    <Legend 
+                      verticalAlign="top" 
+                      height={36}
+                      wrapperStyle={{
+                        paddingTop: "10px",
+                        paddingBottom: "20px"
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="rate"
+                      stroke="#22c55e"
+                      name="Win Rate"
+                      dot={{ r: 4 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="evRate"
+                      stroke="#3b82f6"
+                      name="EV Win Rate"
+                      dot={{ r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -1505,6 +1557,87 @@ const UserProfile = () => {
                   </TableBody>
                 </Table>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="action-history" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Action History</CardTitle>
+              <CardDescription>Track of user state changes and durations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Previous State</TableHead>
+                    <TableHead>New State</TableHead>
+                    <TableHead>Changed By</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Comment</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedFlagHistory.map((change) => (
+                    <TableRow key={change.id}>
+                      <TableCell>{format(change.date, 'MMM d, yyyy HH:mm')}</TableCell>
+                      <TableCell>{change.previousState.charAt(0).toUpperCase() + change.previousState.slice(1)}</TableCell>
+                      <TableCell>{change.newState.charAt(0).toUpperCase() + change.newState.slice(1)}</TableCell>
+                      <TableCell>
+                        <span className={change.changedBy === 'System' ? 'text-blue-600' : 'text-purple-600'}>
+                          {change.changedBy}
+                        </span>
+                      </TableCell>
+                      <TableCell>{change.category}</TableCell>
+                      <TableCell>
+                        <span className={
+                          change.score >= 7.5 ? 'text-red-500' :
+                          change.score >= 5 ? 'text-yellow-500' :
+                          'text-green-500'
+                        }>
+                          {change.score.toFixed(1)}
+                        </span>
+                      </TableCell>
+                      <TableCell>{change.duration} {change.duration === 1 ? 'day' : 'days'}</TableCell>
+                      <TableCell>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => setSelectedComment(change.comment)}
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>State Change Comment</DialogTitle>
+                              <DialogDescription>
+                                Comment added when changing state from {change.previousState} to {change.newState}
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="mt-4 p-4 bg-muted rounded-lg">
+                              {change.comment}
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <TablePagination
+                currentPage={actionHistoryPage}
+                totalItems={sortedFlagHistory.length}
+                itemsPerPage={actionHistoryPerPage}
+                onPageChange={handleActionHistoryPageChange}
+              />
             </CardContent>
           </Card>
         </TabsContent>

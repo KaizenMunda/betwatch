@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Calendar, User } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import {
@@ -12,9 +12,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ProductInteractionData {
   eventName: string;
+  gameType: "cash" | "tournament";
   platform: "mobile" | "desktop";
   eventCount: number;
   handsPlayed: number;
@@ -25,6 +34,7 @@ interface ProductInteractionData {
 const mockInteractionData: ProductInteractionData[] = [
   {
     eventName: "Top Up",
+    gameType: "cash",
     platform: "mobile",
     eventCount: 45,
     handsPlayed: 1200,
@@ -32,6 +42,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Emoji",
+    gameType: "cash",
     platform: "desktop",
     eventCount: 320,
     handsPlayed: 1200,
@@ -39,6 +50,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Throwables",
+    gameType: "cash",
     platform: "mobile",
     eventCount: 78,
     handsPlayed: 1200,
@@ -46,6 +58,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Colour Tagging",
+    gameType: "cash",
     platform: "desktop",
     eventCount: 156,
     handsPlayed: 1200,
@@ -53,6 +66,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Notes",
+    gameType: "cash",
     platform: "mobile",
     eventCount: 89,
     handsPlayed: 1200,
@@ -60,6 +74,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Straddle",
+    gameType: "cash",
     platform: "desktop",
     eventCount: 34,
     handsPlayed: 1200,
@@ -67,6 +82,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Rabbit",
+    gameType: "cash",
     platform: "mobile",
     eventCount: 67,
     handsPlayed: 1200,
@@ -74,6 +90,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Leaderboard",
+    gameType: "cash",
     platform: "desktop",
     eventCount: 234,
     handsPlayed: 1200,
@@ -81,6 +98,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Table Menu",
+    gameType: "cash",
     platform: "mobile",
     eventCount: 178,
     handsPlayed: 1200,
@@ -88,6 +106,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Custom Bet Size Event Name",
+    gameType: "cash",
     platform: "desktop",
     eventCount: 45,
     handsPlayed: 1200,
@@ -95,6 +114,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Stats Panel",
+    gameType: "cash",
     platform: "mobile",
     eventCount: 289,
     handsPlayed: 1200,
@@ -102,6 +122,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Auto Top Up",
+    gameType: "cash",
     platform: "desktop",
     eventCount: 23,
     handsPlayed: 1200,
@@ -109,6 +130,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Buy In Preference",
+    gameType: "cash",
     platform: "mobile",
     eventCount: 56,
     handsPlayed: 1200,
@@ -116,6 +138,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Table Theme Changes",
+    gameType: "cash",
     platform: "desktop",
     eventCount: 12,
     handsPlayed: 1200,
@@ -123,6 +146,7 @@ const mockInteractionData: ProductInteractionData[] = [
   },
   {
     eventName: "Avatar",
+    gameType: "cash",
     platform: "mobile",
     eventCount: 8,
     handsPlayed: 1200,
@@ -131,22 +155,29 @@ const mockInteractionData: ProductInteractionData[] = [
 ];
 
 const ProductInteraction = () => {
-  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [playerId, setPlayerId] = useState("12345"); // Current user's ID
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: new Date(),
     to: new Date(),
   });
+  const [selectedGameType, setSelectedGameType] = useState<"cash" | "tournament">("cash");
+  const [selectedPlatform, setSelectedPlatform] = useState<"mobile" | "desktop">("mobile");
   const itemsPerPage = 10;
 
-  // Filter data based on search query
-  const filteredData = mockInteractionData.filter(item =>
-    item.eventName.toLowerCase().includes(searchQuery.toLowerCase())
+  // Calculate max event count per 1000 hands for each event
+  const maxEventCountsPerThousand = mockInteractionData.reduce((acc, item) => {
+    const countPerThousand = (item.eventCount / item.handsPlayed) * 1000;
+    if (!acc[item.eventName] || countPerThousand > acc[item.eventName]) {
+      acc[item.eventName] = countPerThousand;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Filter data based on selected game type and platform
+  const filteredData = mockInteractionData.filter(
+    item => item.gameType === selectedGameType && item.platform === selectedPlatform
   );
 
   // Pagination
@@ -154,11 +185,6 @@ const ProductInteraction = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedData = filteredData.slice(startIndex, endIndex);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -175,15 +201,6 @@ const ProductInteraction = () => {
       header: "Event Name",
       accessor: "eventName",
       render: (value: string) => value
-    },
-    {
-      header: "Platform",
-      accessor: "platform",
-      render: (value: "mobile" | "desktop") => (
-        <span className={value === "mobile" ? "text-blue-600" : "text-purple-600"}>
-          {value.charAt(0).toUpperCase() + value.slice(1)}
-        </span>
-      )
     },
     {
       header: "Event Count",
@@ -211,6 +228,11 @@ const ProductInteraction = () => {
           </span>
         </div>
       )
+    },
+    {
+      header: "Max Event Count / 1000 hands (across system)",
+      accessor: "eventName",
+      render: (value: string) => maxEventCountsPerThousand[value].toFixed(2)
     }
   ];
 
@@ -267,17 +289,40 @@ const ProductInteraction = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSearch} className="mb-6">
+          <div className="mb-6">
             <div className="flex gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by event name..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
+              <Select
+                value={selectedGameType}
+                onValueChange={(value: "cash" | "tournament") => {
+                  setSelectedGameType(value);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select game type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Cash Games</SelectItem>
+                  <SelectItem value="tournament">Tournaments</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={selectedPlatform}
+                onValueChange={(value: "mobile" | "desktop") => {
+                  setSelectedPlatform(value);
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mobile">Mobile</SelectItem>
+                  <SelectItem value="desktop">Desktop</SelectItem>
+                </SelectContent>
+              </Select>
+
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -313,9 +358,8 @@ const ProductInteraction = () => {
                   />
                 </PopoverContent>
               </Popover>
-              <Button type="submit">Search</Button>
             </div>
-          </form>
+          </div>
 
           <div className="rounded-md border">
             <Table>
