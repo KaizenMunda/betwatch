@@ -881,22 +881,9 @@ const UserProfile = () => {
 
         <TabsContent value="gameplay" className="space-y-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle>Gameplay Statistics</CardTitle>
-                <CardDescription>Overall gameplay performance and patterns</CardDescription>
-              </div>
-              <Select defaultValue="30">
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select time range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">Last 7 days</SelectItem>
-                  <SelectItem value="30">Last 30 days</SelectItem>
-                  <SelectItem value="90">Last 90 days</SelectItem>
-                  <SelectItem value="lifetime">Lifetime</SelectItem>
-                </SelectContent>
-              </Select>
+            <CardHeader>
+              <CardTitle>Gameplay Statistics</CardTitle>
+              <CardDescription>Overall gameplay performance and patterns</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -908,7 +895,7 @@ const UserProfile = () => {
                 <div className="p-4 border rounded-lg">
                   <div className="text-sm text-muted-foreground">Average Session Length</div>
                   <div className="text-2xl font-bold">2.5 hrs</div>
-                  <p className="text-sm text-muted-foreground">Last 30 days</p>
+                  <p className="text-sm text-muted-foreground">Lifetime</p>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <div className="text-sm text-muted-foreground">Preferred Stakes</div>
@@ -922,143 +909,68 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">VPIP</div>
-                  <div className="text-2xl font-bold">24.5%</div>
-                  <p className="text-sm text-muted-foreground">Voluntarily Put Money in Pot</p>
+              <div className="mt-8">
+                <div className="flex flex-row items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Performance Statistics</h3>
+                  <Select defaultValue="30">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select time range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="7">Last 7 days</SelectItem>
+                      <SelectItem value="30">Last 30 days</SelectItem>
+                      <SelectItem value="90">Last 90 days</SelectItem>
+                      <SelectItem value="lifetime">Lifetime</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">PFR</div>
-                  <div className="text-2xl font-bold">18.2%</div>
-                  <p className="text-sm text-muted-foreground">Pre-Flop Raise</p>
+                
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">VPIP</div>
+                    <div className="text-2xl font-bold">24.5%</div>
+                    <p className="text-sm text-muted-foreground">Voluntarily Put Money in Pot</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">PFR</div>
+                    <div className="text-2xl font-bold">18.2%</div>
+                    <p className="text-sm text-muted-foreground">Pre-Flop Raise</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">3-Bet</div>
+                    <div className="text-2xl font-bold">7.8%</div>
+                    <p className="text-sm text-muted-foreground">Three-bet percentage</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">C-Bet</div>
+                    <div className="text-2xl font-bold">68.5%</div>
+                    <p className="text-sm text-muted-foreground">Continuation bet frequency</p>
+                  </div>
                 </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">3-Bet</div>
-                  <div className="text-2xl font-bold">7.8%</div>
-                  <p className="text-sm text-muted-foreground">Three-bet percentage</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">C-Bet</div>
-                  <div className="text-2xl font-bold">68.5%</div>
-                  <p className="text-sm text-muted-foreground">Continuation bet frequency</p>
-                </div>
-              </div>
 
-              <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Showdown Win</div>
-                  <div className="text-2xl font-bold">52.3%</div>
-                  <p className="text-sm text-muted-foreground">Wins at showdown</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Non-Showdown Win</div>
-                  <div className="text-2xl font-bold">34.8%</div>
-                  <p className="text-sm text-muted-foreground">Wins without showdown</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Fold to 3-Bet</div>
-                  <div className="text-2xl font-bold">62.5%</div>
-                  <p className="text-sm text-muted-foreground">Folding to three-bets</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="text-sm text-muted-foreground">Went to Showdown</div>
-                  <div className="text-2xl font-bold">28.6%</div>
-                  <p className="text-sm text-muted-foreground">Hands that reached showdown</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Session History</CardTitle>
-                  <CardDescription>Recent gameplay sessions</CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-[300px] justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dateRange.from ? (
-                          dateRange.to ? (
-                            <>
-                              {format(dateRange.from, "LLL dd, y")} -{" "}
-                              {format(dateRange.to, "LLL dd, y")}
-                            </>
-                          ) : (
-                            format(dateRange.from, "LLL dd, y")
-                          )
-                        ) : (
-                          <span>Pick a date range</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="end">
-                      <Calendar
-                        mode="range"
-                        defaultMonth={dateRange.from}
-                        selected={dateRange}
-                        onSelect={(range: any) => setDateRange(range)}
-                        numberOfMonths={2}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">Showdown Win</div>
+                    <div className="text-2xl font-bold">52.3%</div>
+                    <p className="text-sm text-muted-foreground">Wins at showdown</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">Non-Showdown Win</div>
+                    <div className="text-2xl font-bold">34.8%</div>
+                    <p className="text-sm text-muted-foreground">Wins without showdown</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">Fold to 3-Bet</div>
+                    <div className="text-2xl font-bold">62.5%</div>
+                    <p className="text-sm text-muted-foreground">Folding to three-bets</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <div className="text-sm text-muted-foreground">Went to Showdown</div>
+                    <div className="text-2xl font-bold">28.6%</div>
+                    <p className="text-sm text-muted-foreground">Hands that reached showdown</p>
+                  </div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Game Type</TableHead>
-                    <TableHead>Stakes</TableHead>
-                    <TableHead>Hands Played</TableHead>
-                    <TableHead>Win/Loss</TableHead>
-                    <TableHead>BB/100</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockSessions
-                    .filter(session => {
-                      if (!dateRange.from && !dateRange.to) return true;
-                      if (dateRange.from && !dateRange.to) {
-                        return session.date >= dateRange.from;
-                      }
-                      if (!dateRange.from && dateRange.to) {
-                        return session.date <= dateRange.to;
-                      }
-                      if (dateRange.from && dateRange.to) {
-                        return session.date >= dateRange.from && session.date <= dateRange.to;
-                      }
-                      return true;
-                    })
-                    .slice((sessionPage - 1) * sessionsPerPage, sessionPage * sessionsPerPage)
-                    .map((session, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{format(session.date, 'MMM d, yyyy')}</TableCell>
-                        <TableCell>{session.duration}</TableCell>
-                        <TableCell>{session.gameType}</TableCell>
-                        <TableCell>{session.stakes}</TableCell>
-                        <TableCell>{session.handsPlayed}</TableCell>
-                        <TableCell className={session.winLoss >= 0 ? "text-green-500" : "text-red-500"}>
-                          {session.winLoss >= 0 ? '+' : ''}{session.winLoss.toLocaleString()}
-                        </TableCell>
-                        <TableCell>{session.bb100}</TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-              <TablePagination
-                currentPage={sessionPage}
-                totalItems={mockSessions.length}
-                itemsPerPage={sessionsPerPage}
-                onPageChange={handleSessionPageChange}
-              />
             </CardContent>
           </Card>
         </TabsContent>
