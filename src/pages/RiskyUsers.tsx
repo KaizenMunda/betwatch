@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ConfirmationDialog from "@/components/ui-custom/ConfirmationDialog";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, MessageSquare } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
@@ -14,12 +14,19 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import WhitelistDialog from "@/components/ui-custom/WhitelistDialog";
 import { TablePagination } from "@/components/ui-custom/TablePagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ConfirmationState {
   isOpen: boolean;
   userId: string | null;
   userName: string | null;
-  action: "block" | "flag" | null;
+  action: "block" | "flag" | "unblock" | "review" | null;
 }
 
 interface SortConfig {
@@ -53,6 +60,17 @@ const RiskyUsers = () => {
   const [timeRange, setTimeRange] = useState("week");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [whitelistDialog, setWhitelistDialog] = useState<WhitelistState>({
+    isOpen: false,
+    userId: null,
+    userName: null,
+  });
+  const [commentsDialog, setCommentsDialog] = useState({
+    isOpen: false,
+    userId: null,
+    userName: null,
+    comments: ""
+  });
+  const [reviewDialog, setReviewDialog] = useState({
     isOpen: false,
     userId: null,
     userName: null,
@@ -434,6 +452,68 @@ const RiskyUsers = () => {
     setTimeRange(value);
   };
 
+  const handleUnblock = (userId: string, userName: string) => {
+    setConfirmation({
+      isOpen: true,
+      userId,
+      userName,
+      action: "unblock",
+    });
+  };
+
+  const handleViewComments = (userId: string, userName: string) => {
+    // Mock comments - in real app, fetch from API
+    const mockComments = `User blocked on ${format(new Date(), 'MMM d, yyyy')} for suspicious activity.\n\nDetected pattern of coordinated play with user ID 456.\n\nMultiple accounts sharing same IP address and device fingerprint.\n\nRecommended for permanent suspension after manual review.`;
+    
+    setCommentsDialog({
+      isOpen: true,
+      userId,
+      userName,
+      comments: mockComments
+    });
+  };
+
+  const handleReview = (userId: string, userName: string) => {
+    setReviewDialog({
+      isOpen: true,
+      userId,
+      userName,
+    });
+  };
+
+  const executeUnblock = () => {
+    console.log("Unblocking user:", confirmation.userId);
+    // Add your unblock logic here
+    closeConfirmation();
+  };
+
+  const executeReview = () => {
+    console.log("Reviewing user:", reviewDialog.userId);
+    // Add your review logic here
+    setReviewDialog({
+      isOpen: false,
+      userId: null,
+      userName: null,
+    });
+  };
+
+  const closeCommentsDialog = () => {
+    setCommentsDialog({
+      isOpen: false,
+      userId: null,
+      userName: null,
+      comments: ""
+    });
+  };
+
+  const closeReviewDialog = () => {
+    setReviewDialog({
+      isOpen: false,
+      userId: null,
+      userName: null,
+    });
+  };
+
   const UserTable = ({ users, tabType }: { users: typeof mockUsers.underReview, tabType: 'under-review' | 'flagged' | 'blocked' }) => {
     const totalPages = Math.ceil(users.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -502,7 +582,8 @@ const RiskyUsers = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-orange-50 hover:bg-orange-100 text-orange-600"
+                className="bg-blue-50 hover:bg-blue-100 text-blue-600"
+                onClick={() => handleReview(user.id, user.username)}
               >
                 Review
               </Button>
@@ -523,6 +604,7 @@ const RiskyUsers = () => {
                 variant="outline" 
                 size="sm" 
                 className="bg-green-50 hover:bg-green-100 text-green-600"
+                onClick={() => handleUnblock(user.id, user.username)}
               >
                 Unblock
               </Button>
@@ -530,7 +612,9 @@ const RiskyUsers = () => {
                 variant="outline" 
                 size="sm" 
                 className="bg-blue-50 hover:bg-blue-100 text-blue-600"
+                onClick={() => handleViewComments(user.id, user.username)}
               >
+                <MessageSquare className="h-4 w-4 mr-1" />
                 View Comments
               </Button>
             </div>
@@ -730,29 +814,87 @@ const RiskyUsers = () => {
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
-      <ConfirmationDialog
-        isOpen={confirmation.isOpen}
-        onClose={closeConfirmation}
-        onConfirm={executeAction}
-        title={
-          confirmation.action === "block"
-            ? "Block User"
-            : "Flag User"
-        }
-        description={
-          confirmation.action === "block"
-            ? `Are you sure you want to block ${confirmation.userName}? This will prevent them from accessing the platform.`
-            : `Are you sure you want to flag ${confirmation.userName} for suspicious activity?`
-        }
-        actionLabel={
-          confirmation.action === "block"
-            ? "Block"
-            : "Flag"
-        }
-        variant="destructive"
-        showComment={true}
-      />
+      {/* Unblock Confirmation Dialog */}
+      {confirmation.action === "unblock" && (
+        <ConfirmationDialog
+          isOpen={confirmation.isOpen}
+          onClose={closeConfirmation}
+          onConfirm={executeUnblock}
+          title="Unblock User"
+          description={`Are you sure you want to unblock ${confirmation.userName}? This will restore their access to the platform.`}
+          actionLabel="Unblock"
+          variant="default"
+          showComment={true}
+        />
+      )}
+
+      {/* Other Confirmation Dialog */}
+      {confirmation.action !== "unblock" && (
+        <ConfirmationDialog
+          isOpen={confirmation.isOpen}
+          onClose={closeConfirmation}
+          onConfirm={executeAction}
+          title={
+            confirmation.action === "block"
+              ? "Block User"
+              : "Flag User"
+          }
+          description={
+            confirmation.action === "block"
+              ? `Are you sure you want to block ${confirmation.userName}? This will prevent them from accessing the platform.`
+              : `Are you sure you want to flag ${confirmation.userName} for suspicious activity?`
+          }
+          actionLabel={
+            confirmation.action === "block"
+              ? "Block"
+              : "Flag"
+          }
+          variant="destructive"
+          showComment={true}
+        />
+      )}
+
+      {/* Comments Dialog */}
+      <Dialog open={commentsDialog.isOpen} onOpenChange={closeCommentsDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>User Comments - {commentsDialog.userName}</DialogTitle>
+            <DialogDescription>
+              Comments and notes related to this user's actions and blocking history
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <div className="p-4 bg-muted rounded-lg">
+              <pre className="whitespace-pre-wrap text-sm">{commentsDialog.comments}</pre>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Dialog */}
+      <Dialog open={reviewDialog.isOpen} onOpenChange={closeReviewDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Review User - {reviewDialog.userName}</DialogTitle>
+            <DialogDescription>
+              Mark this user for detailed manual review
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This action will move the user to the review queue for detailed analysis by the risk team.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={closeReviewDialog}>
+                Cancel
+              </Button>
+              <Button onClick={executeReview} className="bg-blue-600 hover:bg-blue-700">
+                Mark for Review
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Whitelist Dialog */}
       <WhitelistDialog
